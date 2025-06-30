@@ -1,0 +1,15 @@
+# Environment variables
+.env
+.env.*
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Logs
+logs/
+*.log
+
+# Uploads
+uploads/

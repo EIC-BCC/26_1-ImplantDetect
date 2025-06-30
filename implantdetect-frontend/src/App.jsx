@@ -9,6 +9,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from './components/header';
 
 // Pages
+import ImageUpload from './pages/images/upload';
+
 import Unauthorized from './pages/unauthorized';
 import NotFound from './pages/notfound';
 import Register from './pages/register';
@@ -46,6 +48,7 @@ function App() {
               <Route path="/403" element={<Unauthorized />} />
 
               {/* Authenticated routes */}
+              <Route path="/images/upload" element={<ImageUpload />} />np
               <Route element={<AuthenticatedRoute />}>
               </Route>
             </Routes>

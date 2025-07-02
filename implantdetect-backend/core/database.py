@@ -31,6 +31,10 @@ async def get_async_db():
             yield session
             await session.commit()
         
+        except HTTPException:
+            await session.rollback()
+            raise
+            
         except Exception as e:
             await session.rollback()
             logger.error(f"Database error: {str(e)}", exc_info=True)
@@ -49,20 +53,17 @@ async def create_tables():
     
     try:
         async with async_engine.begin() as conn:
-            # Verificar e criar o schema público se necessário
             schemas = await conn.run_sync(lambda sync_conn: sync_conn.dialect.get_schema_names(sync_conn))
             if 'public' not in schemas:
                 await conn.execute(CreateSchema('public'))
             
-            # Criar todas as tabelas
             await conn.run_sync(Base.metadata.create_all)
             
         logger.info("Tabelas do banco de dados criadas com sucesso")
-        
+    
     except Exception as e:
-        logger.error(f"Erro ao criar tabelas: {str(e)}", exc_info=True)
-        raise
-        
+        logger.error(f"Erro ao criar tabelas: {str(e)}", exc_info=False)
+
 async def database_health_check():
     """
     Verifica se o banco de dados está disponível.

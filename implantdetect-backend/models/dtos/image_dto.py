@@ -7,7 +7,7 @@ class ImageUploadRequest(BaseModel):
 class ImageResponse(BaseModel):
     image_id: int
     user_id: int
-    image_path: str
+    filename: str
     submitted_at: str | None = None
     active: bool | None = None
 
@@ -16,7 +16,7 @@ class ImageResponse(BaseModel):
         return cls(
             image_id=image.id,
             user_id=image.user_id,
-            image_path=image.path.replace('\\uploads\\', ''),
+            filename=image.file_hash + image.file_extension,
             submitted_at=str(image.submitted_at) if hasattr(image, 'submitted_at') else None,
             active=bool(image.active) if hasattr(image, 'active') else None
         )

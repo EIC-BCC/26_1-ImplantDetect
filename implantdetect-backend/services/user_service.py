@@ -43,7 +43,7 @@ class UserService:
         user = await self.dao.get_user_by_username_or_email(identifier)
         
         if not user:
-            return self._handle_user_not_found()
+            await self._handle_user_not_found()
 
         if not verify_password(password, str(user.hashed_password)):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
@@ -60,7 +60,7 @@ class UserService:
         user = await self.dao.get_user_by_id(user_id)
         
         if not user:
-            return self._handle_user_not_found()
+            await self._handle_user_not_found()
         
         logger.info(f"Dados do usuário {user.username} ({user.email}) recuperados com sucesso.")
         return user
@@ -69,7 +69,7 @@ class UserService:
         user = await self.dao.update_user(updated_user_data)
         
         if not user:
-            return self._handle_user_not_found()
+            await self._handle_user_not_found()
         
         logger.info(f"Dados do usuário {user.username} ({user.email}) atualizados com sucesso.")
         return user
@@ -78,7 +78,7 @@ class UserService:
         user = await self.dao.remove_user(user_id)
         
         if not user:
-            return self._handle_user_not_found()
+            await self._handle_user_not_found()
         
         logger.info(f"Usuário {user.username} ({user.email}) removido com sucesso.")
         return user

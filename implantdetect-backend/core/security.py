@@ -1,6 +1,7 @@
+import hmac
+import hashlib
 from jose import jwt
 from typing import Optional
-from passlib.hash import bcrypt
 from jose.exceptions import JWTError
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -32,19 +33,20 @@ def verify_access_token(token: str) -> Optional[dict]:
     except JWTError:
         return None
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verifica se a senha em texto simples corresponde à senha criptografada.
-    """
-    
-    return bcrypt.verify(plain_password, hashed_password)
 
 def hash_password(password: str) -> str:
     """
-    Criptografa uma senha em texto simples usando salt das configurações.
+    Hashes a plain password using SHA-256 and a secret key as salt.
     """
-    
-    return bcrypt.hash(password, salt=settings.SECRET_KEY)
+    salted = (password + settings.SECRET_KEY).encode()
+    return hashlib.sha256(salted).hexdigest()
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Verifies a plain password against a SHA-256 hash.
+    """
+    return hmac.compare_digest(hash_password(plain_password), hashed_password)
+
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     """

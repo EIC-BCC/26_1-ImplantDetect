@@ -79,6 +79,7 @@ class ImageService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Formato de imagem não reconhecido."
                 )
+                
             self._check_format(pil_image.format)
             
             await image.seek(0)
@@ -113,17 +114,18 @@ class ImageService:
         
         try:
             await self._validate_image(image)
-            
-            saved_path = await self.dao.save_image(image)
-            
+
+            file_hash, file_extension = await self.dao.save_image(image)
+
             image_data = Image(
                 user_id=user_id,
-                filename=saved_path
+                file_hash=file_hash,
+                file_extension=file_extension,
             )
             
             image_record = await self.dao.add_image(image_data)
-            
-            logger.info(f"Imagem {image_record.id} salva com sucesso em {saved_path}.")
+
+            logger.info(f"Imagem {image_record.id} salva com sucesso em {file_hash}.")
             return image_record.id
             
         except Exception as e:
@@ -141,7 +143,7 @@ class ImageService:
         image = await self.dao.get_image_by_id(image_id)
         
         if not image:
-            return self._handle_image_not_found()
+            self._handle_image_not_found()
         
         logger.info(f"Imagem com ID {image_id} encontrada.")
         return image
@@ -154,10 +156,10 @@ class ImageService:
         images = await self.dao.get_all_images_from_user(user_id)
         
         if not images:
-            return self._handle_image_not_found()
+            self._handle_image_not_found()
         
         logger.info(f"{len(images)} imagens encontradas para o usuário com ID {user_id}.")
-        return [ImageResponse.model_validate(image) for image in images]
+        return [ImageResponse.from_orm(image) for image in images]
 
     async def update_image(self, image_id: int, updated_data: dict) -> bool:
         """
@@ -167,7 +169,7 @@ class ImageService:
         image = await self.get_image_by_id(image_id)
         
         if not image:
-            return self._handle_image_not_found()
+            self._handle_image_not_found()
 
         try:
             await self.dao.update_image(image_id, updated_data)
@@ -186,7 +188,7 @@ class ImageService:
         image = await self.get_image_by_id(image_id)
         
         if not image:
-            return self._handle_image_not_found()
+            self._handle_image_not_found()
 
         try:
             await self.dao.remove_image(image_id)

@@ -109,8 +109,8 @@ class ImageService:
         """
         Processa o upload de uma imagem.
         1. Valida a extensão e tamanho
-        2. Salva o arquivo no disco
-        3. Cria um registro no banco de dados
+        2. Salva o arquivo no disco (se não existir)
+        3. Cria um registro no banco de dados (se não existir)
         4. Adiciona à fila de processamento
         """
         
@@ -119,6 +119,13 @@ class ImageService:
 
             file_hash, file_extension = await self.image_dao.save_image(image)
 
+            existing_image = await self.image_dao.get_image_by_hash(file_hash, file_extension)
+            
+            if existing_image:
+                logger.info(f"Imagem já existe no banco de dados com ID {existing_image.id}.")
+                await self.process_service.add_process(existing_image)
+                return existing_image.id
+            
             image_data = Image(
                 user_id=user_id,
                 file_hash=file_hash,
@@ -128,7 +135,6 @@ class ImageService:
             image_record = await self.image_dao.add_image(image_data)
             logger.info(f"Imagem {image_record.id} salva com sucesso em {file_hash}.")
             await self.process_service.add_process(image_record)
-            
             return image_record.id
             
         except Exception as e:

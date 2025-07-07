@@ -2,12 +2,13 @@ from sqlalchemy import Column, Integer
 from models.entities.base import Base
 from datetime import datetime
 from sqlalchemy import DateTime
+from sqlalchemy.orm import Mapped, mapped_column
 
 class Process(Base):
     __tablename__ = 'process'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    status = Column(Integer, nullable=False) 
-    image_id = Column(Integer, nullable=False)
-    user_id = Column(Integer, nullable=False)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    status: Mapped[int] = mapped_column(Integer, nullable=False)
+    image_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)

@@ -44,21 +44,28 @@ class ProcessService:
         )
 
         new_process = await self.process_dao.add_process(process)
-        logger.info(f"Processo {new_process.id} criado da imagem {image.filename} para o usuário {image.user_id}.")
+        logger.info(f"Processo {new_process.id} criado da imagem {image.file_hash} para o usuário {image.user_id}.")
 
         try:
-            predictions = await self.model.predict(image.filename)
-            await self._handle_predictions(new_process, predictions, image.filename)
+            if image.file_extension is None:
+                logger.error(f"Image {image.file_hash} has no file extension.")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Image has no file extension"
+                )
+            
+            predictions = await self.model.predict(image.file_hash, image.file_extension)
+            await self._handle_predictions(new_process, predictions, image.file_hash)
             return new_process
         except Exception as e:
-            await self._handle_processing_error(new_process, image.filename, e)
+            await self._handle_processing_error(new_process, image.file_hash, e)
 
-    async def _handle_predictions(self, process: Process, predictions: list, filename: str):
+    async def _handle_predictions(self, process: Process, predictions: list, file_hash: str):
         if not predictions:
-            logger.warning(f"Nenhuma previsão feita para a imagem {filename}.")
-            await self.process_dao.update_process_status(process.id.value, ProcessStatus.FAILED)
+            logger.warning(f"Nenhuma previsão feita para a imagem {file_hash}.")
+            await self.process_dao.update_process_status(process.id, ProcessStatus.COMPLETED)
         else:
-            await self.process_dao.update_process_status(process.id.value, ProcessStatus.COMPLETED)
+            await self.process_dao.update_process_status(process.id, ProcessStatus.COMPLETED)
             for prediction in predictions:
                 result = ProcessResults(
                     process_id=process.id,
@@ -68,9 +75,9 @@ class ProcessService:
                 )
                 await self.process_dao.add_process_result(result)
 
-    async def _handle_processing_error(self, process: Process, filename: str, error: Exception):
-        logger.error(f"Erro ao processar a imagem {filename}: {str(error)}")
-        await self.process_dao.update_process_status(process.id.value, ProcessStatus.FAILED)
+    async def _handle_processing_error(self, process: Process, file_hash: str, error: Exception):
+        logger.error(f"Erro ao processar a imagem {file_hash}: {str(error)}")
+        await self.process_dao.update_process_status(process.id, ProcessStatus.FAILED)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error processing image: {str(error)}"

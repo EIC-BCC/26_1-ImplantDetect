@@ -5,6 +5,7 @@ load_dotenv()
 
 class Settings:
     ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+    UPLOAD_FILE_PATH: str = os.getenv("UPLOAD_FILE_PATH", "./uploads")
     
     # Configuração de segurança (JWT)
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your_default_secret_key")
@@ -19,5 +20,8 @@ class Settings:
     # Configurações do banco de dados
     DATABASE_URL: str = os.getenv("DATABASE_URL", None) # type: ignore
     SQL_ECHO: bool = os.getenv("SQL_ECHO", "false").lower() == "true"
+    
+    # Configurações do modelo YOLO
+    YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "yolo11m-obb.pt")
 
 settings = Settings()

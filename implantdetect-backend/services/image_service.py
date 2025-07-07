@@ -8,13 +8,15 @@ from daos.image_dao import ImageDAO
 from models.entities.image import Image
 from core.configuration import settings
 from models.dtos.image_dto import ImageResponse
+from services.process_service import ProcessService
 
 logger = get_logger(__name__)
 
 class ImageService:
     def __init__(self, db: AsyncSession):
         self._init_configurations()
-        self.dao = ImageDAO(db)
+        self.image_dao = ImageDAO(db)
+        self.process_service = ProcessService(db)
         
     def _handle_image_not_found(self):
         """
@@ -115,7 +117,7 @@ class ImageService:
         try:
             await self._validate_image(image)
 
-            file_hash, file_extension = await self.dao.save_image(image)
+            file_hash, file_extension = await self.image_dao.save_image(image)
 
             image_data = Image(
                 user_id=user_id,
@@ -123,9 +125,10 @@ class ImageService:
                 file_extension=file_extension,
             )
             
-            image_record = await self.dao.add_image(image_data)
-
+            image_record = await self.image_dao.add_image(image_data)
             logger.info(f"Imagem {image_record.id} salva com sucesso em {file_hash}.")
+            await self.process_service.add_process(image_record)
+            
             return image_record.id
             
         except Exception as e:
@@ -140,7 +143,7 @@ class ImageService:
         Busca uma imagem pelo ID.
         """
 
-        image = await self.dao.get_image_by_id(image_id)
+        image = await self.image_dao.get_image_by_id(image_id)
         
         if not image:
             self._handle_image_not_found()
@@ -153,7 +156,7 @@ class ImageService:
         Busca todas as imagens de um usuário pelo ID.
         """
 
-        images = await self.dao.get_all_images_from_user(user_id)
+        images = await self.image_dao.get_all_images_from_user(user_id)
         
         if not images:
             self._handle_image_not_found()
@@ -172,7 +175,7 @@ class ImageService:
             self._handle_image_not_found()
 
         try:
-            await self.dao.update_image(image_id, updated_data)
+            await self.image_dao.update_image(image_id, updated_data)
             logger.info(f"Imagem com ID {image_id} atualizada com sucesso.")
             return True
         
@@ -191,7 +194,7 @@ class ImageService:
             self._handle_image_not_found()
 
         try:
-            await self.dao.remove_image(image_id)
+            await self.image_dao.remove_image(image_id)
             
             logger.info(f"Imagem com ID {image_id} removida com sucesso.")
             return True

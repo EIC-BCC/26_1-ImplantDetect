@@ -7,7 +7,7 @@ from core.logging import get_logger
 from daos.image_dao import ImageDAO
 from models.entities.image import Image
 from core.configuration import settings
-from models.dtos.image_dto import ImageResponse
+from models.dtos.image_dto import ImageResponse, ImageUploadResponse
 from services.process_service import ProcessService
 
 logger = get_logger(__name__)
@@ -105,7 +105,7 @@ class ImageService:
                 detail=f"Erro na validação da imagem: {str(e)}"
             )
 
-    async def handle_image_upload(self, image: UploadFile, user_id: int):
+    async def handle_image_upload(self, image: UploadFile, user_id: int) -> tuple[int, int]:
         """
         Processa o upload de uma imagem.
         1. Valida a extensão e tamanho
@@ -123,8 +123,8 @@ class ImageService:
             
             if existing_image:
                 logger.info(f"Imagem já existe no banco de dados com ID {existing_image.id}.")
-                await self.process_service.add_process(existing_image)
-                return existing_image.id
+                process_id = await self.process_service.add_process(existing_image)
+                return existing_image.id, process_id
             
             image_data = Image(
                 user_id=user_id,
@@ -134,9 +134,9 @@ class ImageService:
             
             image_record = await self.image_dao.add_image(image_data)
             logger.info(f"Imagem {image_record.id} salva com sucesso em {file_hash}.")
-            await self.process_service.add_process(image_record)
-            return image_record.id
-            
+            process_id = await self.process_service.add_process(image_record)
+            return image_record.id, process_id
+
         except Exception as e:
             logger.error(f"Erro ao processar upload de imagem: {str(e)}")
             raise HTTPException(
@@ -170,44 +170,44 @@ class ImageService:
         logger.info(f"{len(images)} imagens encontradas para o usuário com ID {user_id}.")
         return [ImageResponse.from_orm(image) for image in images]
 
-    async def update_image(self, image_id: int, updated_data: dict) -> bool:
-        """
-        Atualiza os dados de uma imagem pelo ID.
-        """
+    # async def update_image(self, image_id: int, updated_data: dict) -> bool:
+    #     """
+    #     Atualiza os dados de uma imagem pelo ID.
+    #     """
 
-        image = await self.get_image_by_id(image_id)
+    #     image = await self.get_image_by_id(image_id)
         
-        if not image:
-            self._handle_image_not_found()
+    #     if not image:
+    #         self._handle_image_not_found()
 
-        try:
-            await self.image_dao.update_image(image_id, updated_data)
-            logger.info(f"Imagem com ID {image_id} atualizada com sucesso.")
-            return True
+    #     try:
+    #         await self.image_dao.update_image(image_id, updated_data)
+    #         logger.info(f"Imagem com ID {image_id} atualizada com sucesso.")
+    #         return True
         
-        except Exception as e:
-            logger.error(f"Erro ao atualizar imagem com ID {image_id}: {str(e)}")
-            return False
+    #     except Exception as e:
+    #         logger.error(f"Erro ao atualizar imagem com ID {image_id}: {str(e)}")
+    #         return False
 
-    async def remove_image(self, image_id: int) -> bool:
-        """
-        Remove uma imagem pelo ID.
-        """
+    # async def remove_image(self, image_id: int) -> bool:
+    #     """
+    #     Remove uma imagem pelo ID.
+    #     """
 
-        image = await self.get_image_by_id(image_id)
+    #     image = await self.get_image_by_id(image_id)
         
-        if not image:
-            self._handle_image_not_found()
+    #     if not image:
+    #         self._handle_image_not_found()
 
-        try:
-            await self.image_dao.remove_image(image_id)
+    #     try:
+    #         await self.image_dao.remove_image(image_id)
             
-            logger.info(f"Imagem com ID {image_id} removida com sucesso.")
-            return True
+    #         logger.info(f"Imagem com ID {image_id} removida com sucesso.")
+    #         return True
 
-        except Exception as e:
-            logger.error(f"Erro ao remover imagem com ID {image_id}: {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Erro ao remover imagem: {str(e)}"
-            )
+    #     except Exception as e:
+    #         logger.error(f"Erro ao remover imagem com ID {image_id}: {str(e)}")
+    #         raise HTTPException(
+    #             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #             detail=f"Erro ao remover imagem: {str(e)}"
+    #         )

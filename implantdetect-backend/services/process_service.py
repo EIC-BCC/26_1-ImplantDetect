@@ -56,7 +56,7 @@ class ProcessService:
             
             predictions = await self.model.predict(image.file_hash, image.file_extension)
             await self._handle_predictions(new_process, predictions, image.file_hash)
-            return new_process
+            return new_process.id
         except Exception as e:
             await self._handle_processing_error(new_process, image.file_hash, e)
 

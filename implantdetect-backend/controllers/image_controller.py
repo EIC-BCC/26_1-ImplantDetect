@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, UploadFile
 from core.database import get_async_db
 from models.dtos.result_dto import Result
 from core.security import get_current_user
-from models.dtos.image_dto import ImageResponse
+from models.dtos.image_dto import ImageResponse, ImageUploadResponse
 from services.image_service import ImageService
 
 router = APIRouter()
@@ -12,8 +12,8 @@ router = APIRouter()
 async def submit_image(image: UploadFile, db=Depends(get_async_db), user=Depends(get_current_user)):
     user_id = int(user["sub"])
     image_service = ImageService(db)
-    image_id = await image_service.handle_image_upload(image, user_id)
-    return Result.ok(message="Imagem salva com sucesso.", data={"image_id": image_id})
+    image_id, process_id = await image_service.handle_image_upload(image, user_id)
+    return Result.ok(data=ImageUploadResponse.from_orm(image_id, process_id).model_dump())
 
 @router.get("/user", response_model=Result)
 async def get_user_images(db=Depends(get_async_db), user=Depends(get_current_user)):

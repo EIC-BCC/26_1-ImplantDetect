@@ -80,29 +80,29 @@ class ImageDAO:
                 detail=f"Erro ao adicionar imagem ao banco de dados: {str(e)}"
             )
 
-    async def remove_image(self, image_id: int) -> Image | None:
-        image = await self.get_image_by_id(image_id)
+    # async def remove_image(self, image_id: int) -> Image | None:
+    #     image = await self.get_image_by_id(image_id)
         
-        if image:
-            setattr(image, 'active', GeneralStatus.INACTIVE)
-            self.db.add(image)
-            await self.db.commit()
-            return image
+    #     if image:
+    #         setattr(image, 'active', GeneralStatus.INACTIVE)
+    #         self.db.add(image)
+    #         await self.db.commit()
+    #         return image
         
-        return None
+    #     return None
 
-    async def update_image(self, image_id: int, updated_data: dict) -> Image | None:
-        image = await self.get_image_by_id(image_id)
+    # async def update_image(self, image_id: int, updated_data: dict) -> Image | None:
+    #     image = await self.get_image_by_id(image_id)
         
-        if image:
-            for key, value in updated_data.items():
-                setattr(image, key, value)
-            self.db.add(image)
-            await self.db.commit()
-            await self.db.refresh(image)
-            return image
+    #     if image:
+    #         for key, value in updated_data.items():
+    #             setattr(image, key, value)
+    #         self.db.add(image)
+    #         await self.db.commit()
+    #         await self.db.refresh(image)
+    #         return image
         
-        return None
+    #     return None
 
     async def get_all_images_from_user(self, user_id: int):
         result = await self.db.execute(

@@ -12,6 +12,7 @@ from models.dtos.result_dto import Result
 from core.security import get_current_user
 from controllers import user_controller, image_controller
 from core.database import create_tables, database_health_check
+from fastapi.middleware.cors import CORSMiddleware
 
 logger = get_logger(__name__)
 
@@ -37,6 +38,17 @@ app = FastAPI(
     root_path="/api",
     lifespan=lifespan
 )
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # In production, replace with your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 app.include_router(user_controller.router, prefix="/users", tags=["users"])
 app.include_router(image_controller.router, prefix="/images", tags=["images"])

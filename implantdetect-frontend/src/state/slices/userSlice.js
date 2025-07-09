@@ -1,8 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import UserService from '../services/userService';
 
-const user = localStorage.getItem('user');
-const token = localStorage.getItem('token');
+let user = null;
+let token = null;
+
+try {
+
+   const user = localStorage.getItem('user');
+   const token = localStorage.getItem('token');
+
+user = storedUser && storedUser !== 'undefined' ? JSON.parse(storedUser) : null;
+    token = storedToken && storedToken !== 'undefined' ? storedToken : null;
+} catch (e) {
+    user = null;
+    token = null;
+}
 
 export const register = createAsyncThunk('user/register', async (user) => {
     try {

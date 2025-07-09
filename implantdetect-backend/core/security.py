@@ -7,7 +7,10 @@ from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, timezone
 
+from core.logging import get_logger
 from core.configuration import settings
+
+logger = get_logger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/login")
 
@@ -38,6 +41,7 @@ def hash_password(password: str) -> str:
     """
     Hashes a plain password using SHA-256 and a secret key as salt.
     """
+    
     salted = (password + settings.SECRET_KEY).encode()
     return hashlib.sha256(salted).hexdigest()
 
@@ -45,6 +49,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verifies a plain password against a SHA-256 hash.
     """
+    
     return hmac.compare_digest(hash_password(plain_password), hashed_password)
 
 
@@ -56,5 +61,6 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     payload = verify_access_token(token)
     
     if not payload:
+        logger.warning("Tentativa de acesso com token inválido ou expirado.")
         raise HTTPException(status_code=401, detail="Token inválido ou expirado")
     return payload

@@ -25,14 +25,14 @@ class UserDao:
         await self.db.refresh(user_entity)
         return user_entity
 
-    async def remove_user(self, user_id: int) -> User | None:
-        user = await self.get_user_by_id(user_id)
-        if user:
-            setattr(user, 'active', GeneralStatus.INACTIVE)
-            self.db.add(user)
-            await self.db.commit()
-            return user
-        return None
+    # async def remove_user(self, user_id: int) -> User | None:
+    #     user = await self.get_user_by_id(user_id)
+    #     if user:
+    #         setattr(user, 'active', GeneralStatus.INACTIVE)
+    #         self.db.add(user)
+    #         await self.db.commit()
+    #         return user
+    #     return None
 
     async def update_user(self, updated_user_data: UserUpdateRequest) -> User | None:
         user = await self.get_user_by_id(updated_user_data.user_id)

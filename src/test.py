@@ -1,8 +1,9 @@
 from ultralytics import YOLO
 from glob import glob
+import json
 
-files = glob("./data/val/images/*.jpg")
-model = YOLO('./models/train3/weights/best.pt')
+files = glob("./implantdetect-backend/uploads/*.jpg")
+model = YOLO('./models/train10/weights/best.pt')
 
 print(files)
 for file in files:
@@ -11,6 +12,6 @@ for file in files:
                             conf=0.1,
                             )
     
-    for result in results:
-        result.show()
+    for r in results:
+        print(json.loads(r.to_json())[0])
     

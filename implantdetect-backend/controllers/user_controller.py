@@ -32,8 +32,8 @@ async def get_user(user_id: int, db=Depends(get_async_db), user=Depends(get_curr
     user_data = await user_service.get_user(user_id)
     return Result.ok(data=UserResponse.from_orm(user_data).model_dump())
 
-@router.delete("/delete/{user_id}", response_model=Result)
-async def delete_user(user_id: int, db=Depends(get_async_db), user=Depends(get_current_user)):
-    user_service = UserService(db)
-    deleted_user = await user_service.remove_user(user_id)
-    return Result.ok(message="Usuário removido com sucesso.", data=UserResponse.from_orm(deleted_user).model_dump())
+# @router.delete("/delete/{user_id}", response_model=Result)
+# async def delete_user(user_id: int, db=Depends(get_async_db), user=Depends(get_current_user)):
+#     user_service = UserService(db)
+#     deleted_user = await user_service.remove_user(user_id)
+#     return Result.ok(message="Usuário removido com sucesso.", data=UserResponse.from_orm(deleted_user).model_dump())

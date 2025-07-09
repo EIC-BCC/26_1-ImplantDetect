@@ -20,3 +20,14 @@ class ImageResponse(BaseModel):
             submitted_at=str(image.submitted_at) if hasattr(image, 'submitted_at') else None,
             active=bool(image.active) if hasattr(image, 'active') else None
         )
+        
+class ImageUploadResponse(BaseModel):
+    image_id: int
+    process_id: int
+    
+    @classmethod
+    def from_orm(cls, image_id, process_id):
+        return cls(
+            image_id=image_id,
+            process_id=process_id
+        )

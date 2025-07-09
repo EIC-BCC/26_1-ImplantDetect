@@ -77,4 +77,4 @@ async def get_protected_image(file_hash: str, user=Depends(get_current_user)):
 
 if __name__ == "__main__":
     logger.info("Inicializando o backend do ImplantDetect...")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)

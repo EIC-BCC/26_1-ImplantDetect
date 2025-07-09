@@ -2,6 +2,7 @@ from ultralytics import YOLO
 from core.logging import get_logger
 from core.configuration import settings
 from models.dtos.process_dto import ProcessPredictionResponse
+import json
 
 logger = get_logger(__name__)
 
@@ -28,18 +29,10 @@ class YoloWrapper:
 
         predictions = []
         for result in results:
-            boxes = getattr(result, 'boxes', None)
-            if boxes and hasattr(boxes, '__iter__'):
-                for box in boxes:
-                    predictions.append(
-                        ProcessPredictionResponse(
-                            class_id=int(getattr(box, 'cls', -1)),
-                            confidence=float(getattr(box, 'conf', 0.0)),
-                            bounding_box=getattr(box, 'xyxy', [])
-                        )
-                    )
-            else:
-                logger.warning(f"No valid bounding boxes found in the result for {file_hash}.")
+            r = json.loads(result.to_json())
+            for pred in r:
+                print(pred)
+                predictions.append(ProcessPredictionResponse.from_dict(pred))
 
         if not predictions:
             logger.warning(f"No predictions made for {file_hash}.")

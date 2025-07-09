@@ -71,7 +71,7 @@ class ProcessService:
                     process_id=process.id,
                     class_id=prediction.class_id,
                     confidence=prediction.confidence,
-                    bounding_box=prediction.bounding_box
+                    bounding_box=str(prediction.bounding_box)
                 )
                 await self.process_dao.add_process_result(result)
 

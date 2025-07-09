@@ -4,7 +4,15 @@ from datetime import datetime
 class ProcessPredictionResponse(BaseModel):
     class_id: int
     confidence: float
-    bounding_box: list[float]
+    bounding_box: dict
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ProcessPredictionResponse':
+        return ProcessPredictionResponse(
+            class_id=data.get('class', 0),
+            confidence=data.get('confidence', 0.0),
+            bounding_box=data.get('box', {})
+        )
     
 class ProcessResultsResponse(BaseModel):
     process_id: int
@@ -12,7 +20,6 @@ class ProcessResultsResponse(BaseModel):
     class_name: str
     confidence: float
     bounding_box: str
-    probability: float
     message: str | None
 
     @classmethod
@@ -23,7 +30,6 @@ class ProcessResultsResponse(BaseModel):
             class_name=class_name,
             confidence=result.confidence,
             bounding_box=result.bounding_box,
-            probability=result.probability,
             message=result.message
         )
 

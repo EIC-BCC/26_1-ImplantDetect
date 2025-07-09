@@ -12,6 +12,5 @@ class ProcessResults(Base):
     class_id: Mapped[int] = mapped_column(Integer, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False)
     bounding_box: Mapped[str] = mapped_column(String, nullable=False)
-    probability: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     message: Mapped[Optional[str]] = mapped_column(String, nullable=True)

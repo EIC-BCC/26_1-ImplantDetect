@@ -34,17 +34,17 @@ function App() {
         <Header />
         <div className="container mt-5 flex-fill">
           <Routes>
-            {/* Redirect root to login */}
+            
             <Route path="/" element={<Navigate to="/login" />} />
 
-            {/* Open routes */}
+            
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/images/upload" element={<ImageUpload />} />
 
 
-            {/* Protected routes */}
+            
             <Route
               path="/home"
               element={
@@ -62,7 +62,7 @@ function App() {
               }
             />
 
-            {/* Error routes */}
+            
             <Route path="/403" element={<Unauthorized />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" />} />

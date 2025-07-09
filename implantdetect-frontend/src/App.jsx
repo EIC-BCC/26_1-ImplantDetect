@@ -43,8 +43,6 @@ function App() {
             <Route path="/logout" element={<Logout />} />
             <Route path="/images/upload" element={<ImageUpload />} />
 
-
-            
             <Route
               path="/home"
               element={

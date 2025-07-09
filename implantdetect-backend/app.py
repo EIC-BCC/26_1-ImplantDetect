@@ -10,7 +10,7 @@ from core.logging import get_logger
 from core.configuration import settings
 from models.dtos.result_dto import Result
 from core.security import get_current_user
-from controllers import user_controller, image_controller
+from controllers import user_controller, image_controller, process_controller
 from core.database import create_tables, database_health_check
 
 logger = get_logger(__name__)
@@ -40,6 +40,7 @@ app = FastAPI(
 
 app.include_router(user_controller.router, prefix="/users", tags=["users"])
 app.include_router(image_controller.router, prefix="/images", tags=["images"])
+app.include_router(process_controller.router, prefix="/processing", tags=["processing"])
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):

@@ -7,7 +7,7 @@ from services.process_service import ProcessService
 
 router = APIRouter()
 
-@router.get("/process/{process_id}", response_model=Result)
+@router.get("/{process_id}", response_model=Result)
 async def get_process(process_id: int, db=Depends(get_async_db), user=Depends(get_current_user)):
     """
     Busca um processo específico pelo ID.
@@ -27,7 +27,7 @@ async def get_user_processes(db=Depends(get_async_db), user=Depends(get_current_
     processes = await process_service.get_all_processes_by_user(user_id)
     return Result.ok(data={"processes": [process.model_dump() for process in processes]})
 
-@router.get("/process/{process_id}/results", response_model=Result)
+@router.get("/{process_id}/results", response_model=Result)
 async def get_process_results(process_id: int, db=Depends(get_async_db), user=Depends(get_current_user)):
     """
     Busca os resultados de um processo específico.

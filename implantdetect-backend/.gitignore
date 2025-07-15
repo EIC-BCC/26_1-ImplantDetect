@@ -13,3 +13,6 @@ logs/
 
 # Uploads
 uploads/
+
+# Do not ignore .env.example
+!.env.example

@@ -197,3 +197,6 @@ cython_debug/
 !/models/**/labels_correlogram.jpg
 !/models/**/args.yaml
 !/models/**/results.csv
+
+# Do not ignore .env.example
+!.env.example

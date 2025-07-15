@@ -74,11 +74,11 @@ class UserService:
         logger.info(f"Dados do usuário {user.username} ({user.email}) atualizados com sucesso.")
         return user
 
-    async def remove_user(self, user_id: int):
-        user = await self.dao.remove_user(user_id)
+    # async def remove_user(self, user_id: int):
+    #     user = await self.dao.remove_user(user_id)
         
-        if not user:
-            await self._handle_user_not_found()
+    #     if not user:
+    #         await self._handle_user_not_found()
         
-        logger.info(f"Usuário {user.username} ({user.email}) removido com sucesso.")
-        return user
+    #     logger.info(f"Usuário {user.username} ({user.email}) removido com sucesso.")
+    #     return user

@@ -10,7 +10,7 @@ from core.logging import get_logger
 from core.configuration import settings
 from models.dtos.result_dto import Result
 from core.security import get_current_user
-from controllers import user_controller, image_controller
+from controllers import user_controller, image_controller, process_controller
 from core.database import create_tables, database_health_check
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -52,6 +52,7 @@ app.add_middleware(
 
 app.include_router(user_controller.router, prefix="/users", tags=["users"])
 app.include_router(image_controller.router, prefix="/images", tags=["images"])
+app.include_router(process_controller.router, prefix="/processing", tags=["processing"])
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -88,4 +89,4 @@ async def get_protected_image(file_hash: str, user=Depends(get_current_user)):
 
 if __name__ == "__main__":
     logger.info("Inicializando o backend do ImplantDetect...")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)

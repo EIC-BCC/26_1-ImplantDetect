@@ -39,16 +39,13 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # In production, replace with your frontend URL
+    allow_origins=["http://localhost:5173"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
 
 app.include_router(user_controller.router, prefix="/users", tags=["users"])
 app.include_router(image_controller.router, prefix="/images", tags=["images"])
@@ -89,4 +86,4 @@ async def get_protected_image(file_hash: str, user=Depends(get_current_user)):
 
 if __name__ == "__main__":
     logger.info("Inicializando o backend do ImplantDetect...")
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run("app:app", host="localhost", port=8000, reload=True)

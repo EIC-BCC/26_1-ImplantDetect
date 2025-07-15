@@ -12,6 +12,7 @@ from models.dtos.result_dto import Result
 from core.security import get_current_user
 from controllers import user_controller, image_controller, process_controller
 from core.database import create_tables, database_health_check
+from fastapi.middleware.cors import CORSMiddleware
 
 logger = get_logger(__name__)
 
@@ -36,6 +37,14 @@ app = FastAPI(
     version="1.0.0",
     root_path="/api",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(user_controller.router, prefix="/users", tags=["users"])
@@ -77,4 +86,4 @@ async def get_protected_image(file_hash: str, user=Depends(get_current_user)):
 
 if __name__ == "__main__":
     logger.info("Inicializando o backend do ImplantDetect...")
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run("app:app", host="localhost", port=8000, reload=True)

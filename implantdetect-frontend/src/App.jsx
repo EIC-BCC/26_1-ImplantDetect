@@ -10,7 +10,7 @@ import Header from './components/header';
 
 // Pages
 import ImageUpload from './pages/images/upload';
-
+import ImageResults from './pages/images/results';
 import Unauthorized from './pages/unauthorized';
 import NotFound from './pages/notfound';
 import Register from './pages/register';
@@ -22,7 +22,7 @@ function AuthenticatedRoute({ children }) {
   const isAuthenticated = useSelector((state) => state.user.user !== null);
 
   if (!isAuthenticated) {
-    return <Navigate to="/" />;
+    return <Navigate to="/login" />;
   }
 
   return children;
@@ -30,33 +30,46 @@ function AuthenticatedRoute({ children }) {
 
 function App() {
   return (
-    <>
+    <BrowserRouter>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Header />
         <div className="container mt-5 flex-fill">
-          <BrowserRouter>
-            <Routes>
-              {/* Open routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/logout" element={<Logout />} />
-              <Route path="/register" element={<Register />} />
+          <Routes>
+            
+            <Route path="/" element={<Navigate to="/login" />} />
 
-              {/* Catch-all route for 404 and 403 errors */}
-              <Route path="*" element={<Navigate to="/404" />} />
-              <Route path="/404" element={<NotFound />} />
-              <Route path="/403" element={<Unauthorized />} />
+            
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/images/upload" element={<ImageUpload />} />
+            <Route path="/process/:process_id/results" element={<ImageResults />} />
+            <Route
+              path="/home"
+              element={
+                <AuthenticatedRoute>
+                  <Home />
+                </AuthenticatedRoute>
+              }
+            />
+            <Route
+              path="/images/upload"
+              element={
+                <AuthenticatedRoute>
+                  <ImageUpload />
+                </AuthenticatedRoute>
+              }
+            />
 
-              {/* Authenticated routes */}
-              <Route path="/images/upload" element={<ImageUpload />} />np
-              <Route element={<AuthenticatedRoute />}>
-              </Route>
-            </Routes>
-          </BrowserRouter>
+            
+            <Route path="/403" element={<Unauthorized />} />
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" />} />
+          </Routes>
         </div>
       </div>
-    </>
+    </BrowserRouter>
   );
 }
 
-export default App
+export default App;

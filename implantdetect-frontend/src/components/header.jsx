@@ -1,8 +1,8 @@
 import { useSelector } from 'react-redux';
 
 const Header = () => {
-
-    const { user } = useSelector((state) => state.user);
+    
+    const token = useSelector((state) => state.user.token);
 
     return (
         <>
@@ -16,16 +16,16 @@ const Header = () => {
                             <ul className="navbar-nav">
                                 <li className="nav-item d-flex align-items-center">
                                     <i className="bi bi-box-arrow-in-down text-white" style={{ fontSize: '24px' }}></i>
-                                    <a className="nav-link" href="/">ImplantDetect</a>
+                                    <a className="nav-link" href="/images/upload">ImplantDetect</a>
                                 </li>
-                                {user ? (
+                                {token ? (
                                     <>
                                         <li className="nav-item">
-                                            <a className="nav-link" href="/upload">Enviar</a>
+                                            <a className="nav-link" href="/images/upload">Enviar</a>
                                         </li>
                                         <li className="nav-item dropdown">
                                             <button className="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                Olá, {user.username}!
+                                                Bem-vindo de volta!
                                             </button>
                                             <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
                                                 <li><a className="dropdown-item" href="/logout">Sair</a></li>

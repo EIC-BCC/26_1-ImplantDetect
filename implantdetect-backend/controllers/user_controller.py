@@ -10,6 +10,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=UserTokenResponse)
 async def login(username: str = Form(...), password: str = Form(...), db=Depends(get_async_db)):
+    print(f"Login attempt for user: {username}, password: {password}")  # DEBUG: ver estrutura real
     user_service = UserService(db)
     token = await user_service.authenticate_user(username, password)
     return token

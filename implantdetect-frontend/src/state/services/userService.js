@@ -11,24 +11,31 @@ const register = async (user) => {
 
 const login = async (user) => {
     try {
-        const response = await axios.post(`/api/users/login`, user);
+        const formData = new FormData();
+        formData.append("username", user.username);
+        formData.append("password", user.password);
+
+        const response = await axios.post(`/api/users/login`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
 
         if (response.data) {
-            const { token, user } = response.data;
+            const { access_token, token_type } = response.data;
+            const token = `${token_type} ${access_token}`;
             localStorage.setItem("token", token);
-            localStorage.setItem("user", JSON.stringify(user));
 
             return response.data;
         }
     } catch (error) {
-        return Promise.reject(error.response.data);
+        return Promise.reject(error?.response?.data || error.message);
     }
-}
+};
 
 const logout = async () => {
     try {
         localStorage.removeItem("token");
-        localStorage.removeItem("user");
     } catch (error) {
         return Promise.reject(error.response.data);
     }

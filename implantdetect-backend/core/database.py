@@ -53,11 +53,9 @@ async def create_tables():
     
     try:
         async with async_engine.begin() as conn:
-            dialect_name = conn.dialect.name 
+            schemas = await conn.run_sync(lambda sync_conn: sync_conn.dialect.get_schema_names(sync_conn))
 
-            if dialect_name != "sqlite":
-             schemas = await conn.run_sync(lambda sync_conn: sync_conn.dialect.get_schema_names(sync_conn))
-             if 'public' not in schemas:
+            if 'public' not in schemas:
                 await conn.execute(CreateSchema('public'))
             
             await conn.run_sync(Base.metadata.create_all)

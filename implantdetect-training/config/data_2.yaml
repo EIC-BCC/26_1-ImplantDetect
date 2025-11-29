@@ -1,0 +1,24 @@
+path: D:/Estudos/BCC/PCS/implantdetect
+train: data/train
+val: data/val
+
+names:
+  0: ILCM 3510
+  1: ILCM 3511
+  2: ILCM 3513
+  3: ILCM 3810
+  4: ILCM 3811
+  5: ILCM 3813
+  6: ILCM 3885
+  7: ILCM 4510
+  8: ILCM 4511
+  9: ILCM 4585
+  10: ILHE 3510
+  11: ILHE 3511
+  12: ILHE 3711
+  13: ILHE 3785
+  14: ILHE 4010
+  15: ILHE 4011
+  16: ILHE 4510
+  17: ILHE 4511
+  18: ILHE 4585

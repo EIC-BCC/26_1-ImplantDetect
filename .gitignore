@@ -177,26 +177,25 @@ cython_debug/
 
 *.pt
 
-# Ignore everything inside data/ directory
-/data/**
-# Except for subdirectories
-!/data/**/
-# And except for *.gitkeep and others files
+# # Ignore everything inside data/ directory
+# /data/**
+# # Except for subdirectories
+# !/data/**/
+# # And except for *.gitkeep and others files
 !*.gitkeep
 !*.yaml
-!*.txt
+# !*.txt
 
-# Ignore everything inside models/ directory
-/models/**
-# Except for subdirectories
-!/models/**/
-# And except for *.pt
-!/models/**/*.pt
-!/models/**/*.png
-!/models/**/labels.jpg
-!/models/**/labels_correlogram.jpg
-!/models/**/args.yaml
-!/models/**/results.csv
+# # Ignore everything inside models/ directory
+# /models/**
+# # Except for subdirectories
+# !/models/**/
+# # And except for *.pt
+# !/models/**/*.pt
+# !/models/**/*.png
+# !/models/**/labels.jpg
+# !/models/**/labels_correlogram.jpg
+# !/models/**/args.yaml
 
 # Do not ignore .env.example
 !.env.example

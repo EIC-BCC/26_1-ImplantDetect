@@ -1,0 +1,27 @@
+# Ignore everything inside data/ directory
+data/**/*.csv
+/data/**
+# Except for subdirectories
+!/data/**/
+# And except for *.pt
+!/data/**/*.pt
+!/data/**/*.png
+!/data/**/*.txt
+!/data/**/labels.jpg
+!/data/**/labels_correlogram.jpg
+!/data/**/args.yaml
+
+
+# Ignore everything inside data/ directory
+/models/**
+/models/**/weights/
+# Except for subdirectories
+!/models/**/
+# And except for
+!/models/**/*.pt
+!/models/**/*.png
+!/models/**/labels.jpg
+!/models/**/labels_correlogram.jpg
+!/models/**/args.yaml
+
+/models/pretrained

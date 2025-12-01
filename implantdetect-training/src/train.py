@@ -27,6 +27,7 @@ def train_yolo_obb():
         data=YAML_PATH,                 # Caminho absoluto para o yaml
         project=OUTPUT_DIR,             # Define a pasta raiz de saída
         name='yolo11_obb_clahe_run',    # Nome da subpasta do experimento
+        classes = [1],
         
         epochs=100,
         imgsz=640,

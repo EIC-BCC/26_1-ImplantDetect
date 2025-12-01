@@ -90,14 +90,14 @@ def process_and_split_dataset(
 # --- CONFIGURAÇÃO (AJUSTE AQUI) ---
 
 # Caminho da pasta principal que contém "images" e "labels"
-CAMINHO_RAIZ = "datasets/todas_imagens" 
+CAMINHO_RAIZ = "data/raw/todas_imagens" 
 
 # Caminhos derivados (não precisa mexer)
 ORIGEM_IMAGENS = f"{CAMINHO_RAIZ}/images"
 ORIGEM_LABELS  = f"{CAMINHO_RAIZ}/labels"
 
 # Onde será salvo o dataset final pronto para treino
-DESTINO_DATASET = "datasets/dataset_yolo_clahe"
+DESTINO_DATASET = "data/processed/dataset_yolo_clahe2"
 
 if __name__ == "__main__":
     process_and_split_dataset(

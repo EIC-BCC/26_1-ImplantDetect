@@ -1,36 +1,51 @@
 from pydantic import BaseModel
-from datetime import datetime
+from typing import Optional
+from models.entities.image import Image
 
 class ProcessPredictionResponse(BaseModel):
-    class_id: int
+    class_name: str
     confidence: float
     bounding_box: dict
 
     @staticmethod
     def from_dict(data: dict) -> 'ProcessPredictionResponse':
         return ProcessPredictionResponse(
-            class_id=data.get('class', 0),
+            class_name=data.get('name', 0),
             confidence=data.get('confidence', 0.0),
             bounding_box=data.get('box', {})
         )
     
 class ProcessResultsResponse(BaseModel):
     process_id: int
-    class_id: int
     class_name: str
-    confidence: float
-    bounding_box: str
+    confidence: float | None
+    bb_x1_center: float | None
+    bb_y1_center: float | None
+    bb_x2_center: float | None
+    bb_y2_center: float | None
+    bb_x3_center: float | None
+    bb_y3_center: float | None
+    bb_x4_center: float | None
+    bb_y4_center: float | None
     message: str | None
+    image_url: str | None = None
 
     @classmethod
-    def from_orm(cls, result, class_name: str = "Unknown"):
+    def from_orm(cls, result, class_name: str = "Unknown", image: Optional[Image] = None):
         return cls(
             process_id=result.process_id,
-            class_id=result.class_id,
             class_name=class_name,
             confidence=result.confidence,
-            bounding_box=result.bounding_box,
-            message=result.message
+            bb_x1_center=result.bb_x1_center,
+            bb_y1_center=result.bb_y1_center,
+            bb_x2_center=result.bb_x2_center,
+            bb_y2_center=result.bb_y2_center,
+            bb_x3_center=result.bb_x3_center,
+            bb_y3_center=result.bb_y3_center,
+            bb_x4_center=result.bb_x4_center,
+            bb_y4_center=result.bb_y4_center,
+            message=result.message,
+            image_url=image.file_hash + image.file_extension if image else None
         )
 
 class ProcessResponse(BaseModel):

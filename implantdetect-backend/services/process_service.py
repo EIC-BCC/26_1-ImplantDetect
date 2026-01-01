@@ -1,3 +1,5 @@
+import json
+
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,8 +8,9 @@ from daos.label_dao import LabelDao
 from daos.process_dao import ProcessDao
 from models.entities.process import Process
 from models.entities.image import Image
+from daos.image_dao import ImageDAO
 from models.entities.process_results import ProcessResults
-from models.dtos.process_dto import ProcessResultsResponse, ProcessResponse
+from models.dtos.process_dto import ProcessResultsResponse, ProcessResponse, ProcessPredictionResponse
 from enums.process_status import ProcessStatus
 from wrapper.yolo_wrapper import YoloWrapper
 
@@ -18,6 +21,7 @@ class ProcessService:
         self.process_dao = ProcessDao(db)
         self.label_dao = LabelDao(db)
         self.model = YoloWrapper()
+        self.image_dao = ImageDAO(db)
 
     async def _handle_process_not_found(self):
         logger.error("Processo não encontrado.")
@@ -60,24 +64,38 @@ class ProcessService:
         except Exception as e:
             await self._handle_processing_error(new_process, image.file_hash, e)
 
-    async def _handle_predictions(self, process: Process, predictions: list, file_hash: str):
+    async def _handle_predictions(self, process: Process, predictions: list[ProcessPredictionResponse], file_hash: str):
         if not predictions:
             logger.warning(f"Nenhuma previsão feita para a imagem {file_hash}.")
             await self.process_dao.update_process_status(process.id, ProcessStatus.COMPLETED)
         else:
             await self.process_dao.update_process_status(process.id, ProcessStatus.COMPLETED)
             for prediction in predictions:
+                label = await self.label_dao.get_label_by_name(prediction.class_name)
                 result = ProcessResults(
                     process_id=process.id,
-                    class_id=prediction.class_id,
+                    class_id=label.id if label else None,
                     confidence=prediction.confidence,
-                    bounding_box=str(prediction.bounding_box)
+                    bb_x1_center=prediction.bounding_box['x1'],
+                    bb_y1_center=prediction.bounding_box['y1'],
+                    bb_x2_center=prediction.bounding_box['x2'],
+                    bb_y2_center=prediction.bounding_box['y2'],
+                    bb_x3_center=prediction.bounding_box['x3'],
+                    bb_y3_center=prediction.bounding_box['y3'],
+                    bb_x4_center=prediction.bounding_box['x4'],
+                    bb_y4_center=prediction.bounding_box['y4'],
                 )
                 await self.process_dao.add_process_result(result)
 
     async def _handle_processing_error(self, process: Process, file_hash: str, error: Exception):
         logger.error(f"Erro ao processar a imagem {file_hash}: {str(error)}")
         await self.process_dao.update_process_status(process.id, ProcessStatus.FAILED)
+        await self.process_dao.add_process_result(
+            ProcessResults(
+                process_id=process.id,
+                message=str(error)
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error processing image: {str(error)}"
@@ -120,14 +138,19 @@ class ProcessService:
         return result
 
     async def get_results_by_process_id(self, process_id: int) -> list[ProcessResultsResponse]:
+        process = await self.process_dao.get_process_by_id(process_id)
+        if not process:
+            await self._handle_process_not_found()
+            
         results = await self.process_dao.get_results_by_process_id(process_id)
         logger.info(f"{len(results)} resultados recuperados para o processo {process_id}.")
+        image = await self.image_dao.get_image_by_id(process.image_id)
         
         response = []
         for result in results:
             class_id_value = getattr(result, 'class_id', 0)
             class_name = await self._get_label_name(class_id_value)
-            response.append(ProcessResultsResponse.from_orm(result, class_name))
+            response.append(ProcessResultsResponse.from_orm(result, class_name, image))
         return response
     
     async def _get_label_name(self, class_id: int) -> str:

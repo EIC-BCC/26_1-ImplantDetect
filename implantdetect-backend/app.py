@@ -78,7 +78,7 @@ async def health_check():
     return {"status": "ok", "database": db_status}
 
 @app.get("/uploads/{file_hash}", tags=["uploads"])
-async def get_protected_image(file_hash: str, user=Depends(get_current_user)):
+async def get_protected_image(file_hash: str):
     file_path = os.path.join("uploads", file_hash)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")

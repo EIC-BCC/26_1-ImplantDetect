@@ -6,20 +6,62 @@ from ultralytics import YOLO
 
 # --- DICIONÁRIO COMPLETO DE CLASSES (Para gerar o YAML correto) ---
 ALL_CLASSES_NAMES = {
-    0: "CMSW 3813", 1: "CMSW 4510", 2: "ILCM 3510", 3: "ILCM 3511", 4: "ILCM 3513",
-    5: "ILCM 3810", 6: "ILCM 3811", 7: "ILCM 3813", 8: "ILCM 3885", 9: "ILCM 4510",
-    10: "ILCM 4511", 11: "ILCM 4585", 12: "ILHE 3510", 13: "ILHE 3511", 14: "ILHE 3711",
-    15: "ILHE 3785", 16: "ILHE 4010", 17: "ILHE 4011", 18: "ILHE 4510", 19: "ILHE 4511",
-    20: "ILHE 4585", 21: "Master AR - Torq Porous NP 3,75 x 13,0mm", 22: "Master Connect AR 3,75 x 11,5mm",
-    23: "Master Connect AR 5,0 x 10,0mm", 24: "Master Easy - Grip Actives RD 3,75 x 10,0mm",
-    25: "Master Easy - Grip Actives RD 3,75 x 11,5mm", 26: "Master Easy - Grip Porous RD 3,75 x 10,0mm",
-    27: "Master Easy - Grip Porous RD 3,75 x 11,5mm", 28: "Master Easy - Grip Porous RD 3,75 x 13,0mm",
-    29: "Master Easy - Grip Porous RD 3,75 x 8,5mm", 30: "SA 313", 31: "SA 411", 32: "SCO 3510",
-    33: "SCW 3211", 34: "SCW 3707", 35: "SCW 3710", 36: "SCW 3711", 37: "SCW 3713",
-    38: "SCW 3785", 39: "SW 3811", 40: "SW 3885", 41: "SW 4513", 42: "SW 5085",
-    43: "SWCM 3513", 44: "SWCM 4513", 45: "SWCM 5010", 46: "SWHE 3710",
-    47: "Titamax Ti Cortical (4,1) 3,75 x 11,0mm", 48: "Titamax Ti Ex (4,1) 3,75 x 13,0mm"
+    0: "CMSW 3813",
+    1: "CMSW 4510",
+    2: "ILCM 3510",
+    3: "ILCM 3511",
+    4: "ILCM 3513",
+    5: "ILCM 3810",
+    6: "ILCM 3811",
+    7: "ILCM 3813",
+    8: "ILCM 3885",
+    9: "ILCM 4510",
+    10: "ILCM 4511",
+    11: "ILCM 4585",
+    12: "ILHE 3510",
+    13: "ILHE 3511",
+    14: "ILHE 3711",
+    15: "ILHE 3785",
+    16: "ILHE 4010",
+    17: "ILHE 4011",
+    18: "ILHE 4510",
+    19: "ILHE 4511",
+    20: "ILHE 4585",
+    21: "Master AR - Torq Porous NP 3,75 x 13,0mm",
+    22: "Master Connect AR 3,75 x 11,5mm",
+    23: "Master Connect AR 5,0 x 10,0mm",
+    24: "Master Easy - Grip Actives RD 3,75 x 10,0mm",
+    25: "Master Easy - Grip Actives RD 3,75 x 11,5mm",
+    26: "Master Easy - Grip Porous RD 3,75 x 10,0mm",
+    27: "Master Easy - Grip Porous RD 3,75 x 11,5mm",
+    28: "Master Easy - Grip Porous RD 3,75 x 13,0mm",
+    29: "Master Easy - Grip Porous RD 3,75 x 8,5mm",
+    30: "Master Easy - Grip Porous RD 4,0 x 10,0mm",
+    31: "SA 313",
+    32: "SA 411",
+    33: "SCO 3510",
+    34: "SCW 3211",
+    35: "SCW 3707",
+    36: "SCW 3710",
+    37: "SCW 3711",
+    38: "SCW 3713",
+    39: "SCW 3785",
+    40: "SW 3811",
+    41: "SW 3885",
+    42: "SW 4513",
+    43: "SW 5085",
+    44: "SWCM 3513",
+    45: "SWCM 3585",
+    46: "SWCM 4513",
+    47: "SWCM 5010",
+    48: "SWHE 3710",
+    49: "Titamax Ti Cortical (4,1) 3,75 x 11,0mm",
+    50: "Titamax Ti Ex (4,1) 3,75 x 13,0mm",
+    51: "UCM 3510",
+    52: "UCM 3511",
+    53: "UCM 4310"
 }
+
 
 def setup_paths():
     """Configura caminhos dinâmicos baseados na localização deste script."""
@@ -172,14 +214,14 @@ if __name__ == '__main__':
     # --- CONFIGURAÇÃO DA EXECUÇÃO ---
     
     # 1. Defina um nome para este experimento (será o nome da pasta em runs/)
-    CODIGO_EXECUCAO = "teste1"
+    CODIGO_EXECUCAO = "todas_rotualdas_clage"
     
     # 2. Defina os IDs das classes ORIGINAIS que deseja MANTER
     # Se uma imagem não tiver nenhuma dessas classes, ela será ignorada no treino.
-    CLASSES_ALVO = {29, 36, 37, 38, 47}
+    CLASSES_ALVO = set(ALL_CLASSES_NAMES.keys()) - set([7, 12, 46, 22, 21, 23, 45, 20, 13, 1, 30, 52, 41, 8, 44, 16, 9, 27, 33, 43, 40, 3, 24, 48, 14])  # Mantém todas as classes disponíveis
     
     # 3. Configurações do modelo
-    NOME_MODELO = 'yolo11m-obb.pt' # Pode ser 'yolo11n.pt', 'yolo11n-obb.pt', etc.
+    NOME_MODELO = 'yolo11s-obb.pt' # Pode ser 'yolo11n.pt', 'yolo11n-obb.pt', etc.
     EPOCAS = 50
 
     run_pipeline(CODIGO_EXECUCAO, CLASSES_ALVO, NOME_MODELO, EPOCAS)

@@ -1,0 +1,13 @@
+path: D:\Estudos\BCC\PCS\implantdetect\implantdetect-training\data\processed\dataset_pipeline_completo_clahe_v11_small_200e
+train: images/train
+val: images/val
+nc: 8
+names:
+  0: SCW 3710
+  1: SCW 3711
+  2: ILCM 3810
+  3: SCW 3713
+  4: SCW 3785
+  5: Titamax Ti Cortical (4,1) 3,75 x 11,0mm
+  6: Titamax Ti Ex (4,1) 3,75 x 13,0mm
+  7: Master Easy - Grip Porous RD 3,75 x 8,5mm

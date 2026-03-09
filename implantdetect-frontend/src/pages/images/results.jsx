@@ -1,314 +1,297 @@
 import { useEffect, useState, useRef, Fragment } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { Eye, EyeOff, ChevronDown, ChevronUp, ArrowLeft, Download } from 'lucide-react';
+
 import ImageService from '../../state/services/imageService';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import Alert from '../../components/ui/Alert';
+import Badge from '../../components/ui/Badge';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
 
-// Paleta de cores para as bounding boxes
-const COLORS = ['#00ff00', '#ff0000', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+const COLORS = [
+  { stroke: '#22c55e', bg: 'bg-green-500', label: 'green' },
+  { stroke: '#ef4444', bg: 'bg-red-500', label: 'red' },
+  { stroke: '#3b82f6', bg: 'bg-blue-500', label: 'blue' },
+  { stroke: '#eab308', bg: 'bg-yellow-500', label: 'amber' },
+  { stroke: '#a855f7', bg: 'bg-purple-500', label: 'purple' },
+  { stroke: '#06b6d4', bg: 'bg-cyan-500', label: 'teal' },
+];
 
-// Função para obter cor baseada no índice
 const getColor = (index) => COLORS[index % COLORS.length];
 
+const isValidResult = (result) => {
+  if (result.message) return false;
+  if (result.class_name === 'Classe None' || !result.class_name) return false;
+  if (result.bb_x1_center == null || result.bb_y1_center == null) return false;
+  return true;
+};
+
 const ImageResults = () => {
-    const { process_id } = useParams();
-    const [results, setResults] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [expandedRow, setExpandedRow] = useState(null);
-    const [imageUrl, setImageUrl] = useState(null);
-    const [hoveredBox, setHoveredBox] = useState(null);
-    const [visibleBoxes, setVisibleBoxes] = useState(new Set());
-    const imageRef = useRef(null);
+  const { process_id } = useParams();
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [expandedRow, setExpandedRow] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [hoveredBox, setHoveredBox] = useState(null);
+  const [visibleBoxes, setVisibleBoxes] = useState(new Set());
+  const imageRef = useRef(null);
 
-    useEffect(() => {
-        const fetchResults = async () => {
-            setLoading(true);
-            setError('');
-            try {
-                const data = await ImageService.getProcessResults(process_id);
-                setResults(data);
-                if (data?.length > 0) {
-                    setImageUrl(`/api/uploads/${data[0].image_url}`);
-                }
-            } catch (err) {
-                setError('Erro ao buscar resultados do processo: ' + (err.message || 'Erro desconhecido'));
-                console.error('Error fetching process results:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchResults();
-    }, [process_id]);
-
-    // Inicializar visibleBoxes quando results mudar
-    useEffect(() => {
-        if (results.length > 0) {
-            const isValidResult = (result) => {
-                if (result.message) return false;
-                if (result.class_name === "Classe None" || !result.class_name) return false;
-                if (
-                    result.bb_x1_center == null ||
-                    result.bb_y1_center == null ||
-                    result.bb_x2_center == null ||
-                    result.bb_y2_center == null ||
-                    result.bb_x3_center == null ||
-                    result.bb_y3_center == null ||
-                    result.bb_x4_center == null ||
-                    result.bb_y4_center == null
-                ) {
-                    return false;
-                }
-                return true;
-            };
-            const valid = results.filter(isValidResult);
-            setVisibleBoxes(new Set(valid.map((_, idx) => idx)));
+  useEffect(() => {
+    const fetchResults = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await ImageService.getProcessResults(process_id);
+        setResults(data);
+        if (data?.length > 0 && data[0].image_url) {
+          setImageUrl(`/api/uploads/${data[0].image_url}`);
         }
-    }, [results]);
-
-    const toggleRow = (index) => {
-        setExpandedRow(expandedRow === index ? null : index);
+      } catch (err) {
+        setError('Erro ao buscar resultados: ' + (err.message || 'Erro desconhecido'));
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchResults();
+  }, [process_id]);
 
-    const toggleBoxVisibility = (index) => {
-        setVisibleBoxes(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(index)) {
-                newSet.delete(index);
-            } else {
-                newSet.add(index);
-            }
-            return newSet;
-        });
-    };
+  useEffect(() => {
+    if (results.length > 0) {
+      const valid = results.filter(isValidResult);
+      setVisibleBoxes(new Set(valid.map((_, idx) => idx)));
+    }
+  }, [results]);
 
-    const handleImageLoad = () => {
-        if (imageRef.current) {
-            setVisibleBoxes(prev => new Set(prev));
-        }
-    };
+  const toggleRow = (index) => setExpandedRow(expandedRow === index ? null : index);
+  const toggleBoxVisibility = (index) => {
+    setVisibleBoxes((prev) => {
+      const newSet = new Set(prev);
+      newSet.has(index) ? newSet.delete(index) : newSet.add(index);
+      return newSet;
+    });
+  };
 
-    if (loading) return <div className="container" style={{ maxWidth: '48em', margin: '0 auto', padding: '3em 1em' }}><p>Carregando...</p></div>;
-    if (error) return <div className="container" style={{ maxWidth: '48em', margin: '0 auto', padding: '3em 1em' }}><div className="alert alert-danger">{error}</div></div>;
-
-    const isValidResult = (result) => {
-        if (result.message) return false;
-        
-        if (result.class_name === "Classe None" || !result.class_name) return false;
-        
-        if (
-            result.bb_x1_center == null ||
-            result.bb_y1_center == null ||
-            result.bb_x2_center == null ||
-            result.bb_y2_center == null ||
-            result.bb_x3_center == null ||
-            result.bb_y3_center == null ||
-            result.bb_x4_center == null ||
-            result.bb_y4_center == null
-        ) {
-            return false;
-        }
-        
-        return true;
-    };
-
-    const validResults = results.filter(isValidResult);
-    const hasErrors = results.length > 0 && validResults.length === 0;
-    const errorMessage = results.find(r => r.message)?.message;
-
+  if (loading) {
     return (
-        <div className="container" style={{ maxWidth: '64em', margin: '0 auto', padding: '2em 1em' }}>
-            <main>
-                <h2 className="text-center mb-4">Resultados do Processo #{process_id}</h2>
-                
-                {results.length === 0 ? (
-                    <div className="alert alert-info">
-                        Nenhum resultado disponível para este processo.
-                    </div>
-                ) : hasErrors && validResults.length === 0 ? (
-                    <>
-                        {imageUrl && (
-                            <div className="mb-4" style={{ textAlign: 'center' }}>
-                                <div 
-                                    style={{ 
-                                        position: 'relative', 
-                                        display: 'inline-block', 
-                                        maxWidth: '100%',
-                                    }}
-                                >
-                                    <img 
-                                        ref={imageRef}
-                                        src={imageUrl} 
-                                        alt="Imagem processada" 
-                                        onLoad={handleImageLoad}
-                                        style={{ 
-                                            width: '600px',
-                                            maxWidth: '100%',
-                                            height: 'auto', 
-                                            display: 'block',
-                                            border: '1px solid #ddd', 
-                                            borderRadius: '4px',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        )}
-                        <div className="alert alert-warning">
-                            <h5 className="alert-heading">
-                                <i className="bi bi-exclamation-triangle-fill"></i> Nenhum implante detectado
-                            </h5>
-                            <p className="mb-0">
-                                {errorMessage ? (
-                                    <>Erro no processamento: {errorMessage}</>
-                                ) : (
-                                    "Não foram encontrados implantes na imagem processada."
-                                )}
-                            </p>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        {imageUrl && (
-                            <div className="mb-4" style={{ textAlign: 'center' }}>
-                                <div 
-                                    style={{ 
-                                        position: 'relative', 
-                                        display: 'inline-block', 
-                                        maxWidth: '100%',
-                                    }}
-                                >
-                                    <img 
-                                        ref={imageRef}
-                                        src={imageUrl} 
-                                        alt="Imagem processada" 
-                                        onLoad={handleImageLoad}
-                                        style={{ 
-                                            width: '600px',
-                                            maxWidth: '100%',
-                                            height: 'auto', 
-                                            display: 'block',
-                                            border: '1px solid #ddd', 
-                                            borderRadius: '4px',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                                        }}
-                                    />
-                                    
-                                    {validResults.map((result, idx) => {
-                                        if (!visibleBoxes.has(idx)) return null;
-                                        
-                                        const color = getColor(idx);
-                                        const points = `${result.bb_x1_center},${result.bb_y1_center} ${result.bb_x2_center},${result.bb_y2_center} ${result.bb_x3_center},${result.bb_y3_center} ${result.bb_x4_center},${result.bb_y4_center}`;
-                                        
-                                        return (
-                                            <svg
-                                                key={idx}
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    pointerEvents: 'none'
-                                                }}
-                                                viewBox={`0 0 ${imageRef.current?.naturalWidth || 1} ${imageRef.current?.naturalHeight || 1}`}
-                                                preserveAspectRatio="none"
-                                            >
-                                                <polygon
-                                                    points={points}
-                                                    fill="none"
-                                                    stroke={color}
-                                                    strokeWidth="4"
-                                                    opacity={hoveredBox === idx ? 1 : 0.7}
-                                                    style={{ transition: 'opacity 0.2s' }}
-                                                />
-                                                <text
-                                                    x={result.bb_x1_center}
-                                                    y={result.bb_y1_center - 10}
-                                                    fill={color}
-                                                    fontSize="24"
-                                                    fontWeight="bold"
-                                                    stroke="#000"
-                                                    strokeWidth="1"
-                                                    paintOrder="stroke"
-                                                >
-                                                    {result.class_name} ({(result.confidence * 100).toFixed(0)}%)
-                                                </text>
-                                            </svg>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-
-                        <table className="table table-hover">
-                            <thead className="table-light">
-                                <tr>
-                                    <th style={{ width: '50px' }}>Visível</th>
-                                    <th>Classe Detectada</th>
-                                    <th>Confiança</th>
-                                    <th style={{ width: '100px' }}>Detalhes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {validResults.map((result, idx) => (
-                                    <Fragment key={idx}>
-                                        <tr
-                                            onMouseEnter={() => setHoveredBox(idx)}
-                                            onMouseLeave={() => setHoveredBox(null)}
-                                            style={{ 
-                                                backgroundColor: hoveredBox === idx ? 'rgba(0,123,255,0.08)' : 'transparent',
-                                                transition: 'background-color 0.2s'
-                                            }}
-                                        >
-                                            <td className="text-center">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={visibleBoxes.has(idx)}
-                                                    onChange={() => toggleBoxVisibility(idx)}
-                                                    style={{ cursor: 'pointer', width: '18px', height: '18px' }}
-                                                />
-                                            </td>
-                                            <td onClick={() => toggleRow(idx)} style={{ cursor: 'pointer' }}>
-                                                <span style={{ 
-                                                    display: 'inline-block',
-                                                    width: '14px',
-                                                    height: '14px',
-                                                    backgroundColor: getColor(idx),
-                                                    marginRight: '10px',
-                                                    border: '1px solid #000',
-                                                    borderRadius: '2px',
-                                                    verticalAlign: 'middle'
-                                                }}></span>
-                                                <strong>{result.class_name}</strong>
-                                            </td>
-                                            <td onClick={() => toggleRow(idx)} style={{ cursor: 'pointer' }}>{(result.confidence * 100).toFixed(1)}%</td>
-                                            <td className="text-center" onClick={() => toggleRow(idx)} style={{ cursor: 'pointer' }}>
-                                                <span className="badge bg-secondary">
-                                                    {expandedRow === idx ? '▲ Ocultar' : '▼ Mostrar'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        {expandedRow === idx && (
-                                            <tr>
-                                                <td colSpan="4" style={{ backgroundColor: '#f8f9fa', padding: '1em' }}>
-                                                    <strong>Coordenadas da Bounding Box:</strong>
-                                                    <div style={{ marginTop: '0.5em', fontFamily: 'monospace' }}>
-                                                        <div>Ponto 1: ({(result.bb_x1_center ?? 0).toFixed(2)}, {(result.bb_y1_center ?? 0).toFixed(2)})</div>
-                                                        <div>Ponto 2: ({(result.bb_x2_center ?? 0).toFixed(2)}, {(result.bb_y2_center ?? 0).toFixed(2)})</div>
-                                                        <div>Ponto 3: ({(result.bb_x3_center ?? 0).toFixed(2)}, {(result.bb_y3_center ?? 0).toFixed(2)})</div>
-                                                        <div>Ponto 4: ({(result.bb_x4_center ?? 0).toFixed(2)}, {(result.bb_y4_center ?? 0).toFixed(2)})</div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </Fragment>
-                                ))}
-                            </tbody>
-                        </table>
-                    </>
-                )}
-            </main>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="text-gray-500 mt-4">Carregando resultados...</p>
         </div>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <Alert variant="error" title="Erro">{error}</Alert>
+      </div>
+    );
+  }
+
+  const validResults = results.filter(isValidResult);
+  const hasNoDetections = results.length > 0 && validResults.length === 0;
+  const errorMessage = results.find((r) => r.message)?.message;
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <Link to="/history" className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 mb-2 transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Voltar ao histórico
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Resultados da Análise
+          </h1>
+          <p className="text-gray-500 mt-1">Processo #{process_id}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {validResults.length > 0 ? (
+            <Badge color="green" dot>{validResults.length} implante(s) detectado(s)</Badge>
+          ) : (
+            <Badge color="amber" dot>Nenhuma detecção</Badge>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Image Viewer */}
+        <div className="lg:col-span-2">
+          <Card padding={false} className="overflow-hidden">
+            {imageUrl && (
+              <div className="relative bg-gray-900 flex items-center justify-center">
+                <img
+                  ref={imageRef}
+                  src={imageUrl}
+                  alt="Radiografia"
+                  onLoad={() => setVisibleBoxes((prev) => new Set(prev))}
+                  className="max-w-full h-auto block"
+                  style={{ maxHeight: '600px' }}
+                />
+                {/* SVG Overlay for bounding boxes */}
+                {imageRef.current && validResults.map((result, idx) => {
+                  if (!visibleBoxes.has(idx)) return null;
+                  const color = getColor(idx);
+                  const points = `${result.bb_x1_center},${result.bb_y1_center} ${result.bb_x2_center},${result.bb_y2_center} ${result.bb_x3_center},${result.bb_y3_center} ${result.bb_x4_center},${result.bb_y4_center}`;
+                  return (
+                    <svg
+                      key={idx}
+                      className="absolute inset-0 w-full h-full pointer-events-none"
+                      viewBox={`0 0 ${imageRef.current.naturalWidth} ${imageRef.current.naturalHeight}`}
+                      preserveAspectRatio="none"
+                    >
+                      <polygon
+                        points={points}
+                        fill="none"
+                        stroke={color.stroke}
+                        strokeWidth="4"
+                        opacity={hoveredBox === idx ? 1 : 0.7}
+                        className="transition-opacity duration-200"
+                      />
+                      <text
+                        x={result.bb_x1_center}
+                        y={result.bb_y1_center - 12}
+                        fill={color.stroke}
+                        fontSize="22"
+                        fontWeight="bold"
+                        stroke="#000"
+                        strokeWidth="0.8"
+                        paintOrder="stroke"
+                      >
+                        {result.class_name} ({(result.confidence * 100).toFixed(0)}%)
+                      </text>
+                    </svg>
+                  );
+                })}
+              </div>
+            )}
+
+            {hasNoDetections && (
+              <div className="p-6">
+                <Alert variant="warning" title="Nenhum implante detectado">
+                  {errorMessage || 'Não foram encontrados implantes na imagem processada.'}
+                </Alert>
+              </div>
+            )}
+
+            {results.length === 0 && (
+              <div className="p-6">
+                <Alert variant="info">Nenhum resultado disponível para este processo.</Alert>
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* Detection List */}
+        <div className="lg:col-span-1">
+          <Card>
+            <Card.Header>
+              <Card.Title>Detecções</Card.Title>
+              <Card.Description>
+                {validResults.length} implante(s) encontrado(s)
+              </Card.Description>
+            </Card.Header>
+
+            {validResults.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-8">
+                Nenhuma detecção para exibir.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {validResults.map((result, idx) => {
+                  const color = getColor(idx);
+                  const isExpanded = expandedRow === idx;
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`rounded-lg border transition-all duration-200 ${
+                        hoveredBox === idx ? 'border-primary-300 bg-primary-50/50' : 'border-gray-100'
+                      }`}
+                      onMouseEnter={() => setHoveredBox(idx)}
+                      onMouseLeave={() => setHoveredBox(null)}
+                    >
+                      <div className="flex items-center gap-3 p-3">
+                        {/* Visibility toggle */}
+                        <button
+                          onClick={() => toggleBoxVisibility(idx)}
+                          className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                          title={visibleBoxes.has(idx) ? 'Ocultar' : 'Mostrar'}
+                        >
+                          {visibleBoxes.has(idx) ? (
+                            <Eye className="h-4 w-4" />
+                          ) : (
+                            <EyeOff className="h-4 w-4" />
+                          )}
+                        </button>
+
+                        {/* Color indicator */}
+                        <div className={`w-3 h-3 rounded-full flex-shrink-0 ${color.bg}`} />
+
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">
+                            {result.class_name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Confiança: {(result.confidence * 100).toFixed(1)}%
+                          </p>
+                        </div>
+
+                        {/* Confidence bar */}
+                        <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${result.confidence * 100}%`,
+                              backgroundColor: color.stroke,
+                            }}
+                          />
+                        </div>
+
+                        {/* Expand toggle */}
+                        <button
+                          onClick={() => toggleRow(idx)}
+                          className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                        >
+                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </button>
+                      </div>
+
+                      {/* Expanded details */}
+                      {isExpanded && (
+                        <div className="px-3 pb-3 border-t border-gray-100 pt-3 animate-fade-in">
+                          <p className="text-xs font-medium text-gray-500 mb-2">Bounding Box (OBB):</p>
+                          <div className="grid grid-cols-2 gap-1.5 text-xs font-mono text-gray-600">
+                            <div className="bg-gray-50 rounded px-2 py-1">
+                              P1: ({result.bb_x1_center?.toFixed(1)}, {result.bb_y1_center?.toFixed(1)})
+                            </div>
+                            <div className="bg-gray-50 rounded px-2 py-1">
+                              P2: ({result.bb_x2_center?.toFixed(1)}, {result.bb_y2_center?.toFixed(1)})
+                            </div>
+                            <div className="bg-gray-50 rounded px-2 py-1">
+                              P3: ({result.bb_x3_center?.toFixed(1)}, {result.bb_y3_center?.toFixed(1)})
+                            </div>
+                            <div className="bg-gray-50 rounded px-2 py-1">
+                              P4: ({result.bb_x4_center?.toFixed(1)}, {result.bb_y4_center?.toFixed(1)})
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default ImageResults;

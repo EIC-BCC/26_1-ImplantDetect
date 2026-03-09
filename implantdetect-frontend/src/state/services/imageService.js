@@ -1,49 +1,36 @@
-import axios from 'axios';
+import api from './api';
 
-const token = localStorage.getItem('token');
-
-const upload = async (item) => {
-    try {
-        const response = await axios.post(`/api/images/submit`, item,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `${token}`
-                }
-            }
-        );
-        return response.data.data;
-    } catch (error) {
-        return Promise.reject(error.response?.data);
-    }
+const upload = async (formData) => {
+  const response = await api.post('/images/submit', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data.data;
 };
 
 const get = async (id) => {
-    try {
-        const response = await axios.get(`/api/images/${id}`);
-        return response.data.data;
-    } catch (error) {
-        return Promise.reject(error.response?.data);
-    }
+  const response = await api.get(`/images/${id}`);
+  return response.data.data;
 };
 
-const getProcessResults = async (process_id) => {
-    try {
-        const response = await axios.get(`/api/processing/${process_id}/results`, {
-            headers: {
-                'Authorization': `${token}`
-            }
-        });
-        return response.data.data.results || [];
-    } catch (error) {
-        return Promise.reject(error.response?.data);
-    }
+const getUserImages = async () => {
+  const response = await api.get('/images/user');
+  return response.data.data?.images || [];
 };
 
-const uploadService = {
-    upload,
-    get,
-    getProcessResults
+const getProcessResults = async (processId) => {
+  const response = await api.get(`/processing/${processId}/results`);
+  return response.data.data?.results || [];
 };
 
-export default uploadService;
+const getUserProcesses = async () => {
+  const response = await api.get('/processing/user/processes');
+  return response.data.data?.processes || [];
+};
+
+const getProcess = async (processId) => {
+  const response = await api.get(`/processing/${processId}`);
+  return response.data.data?.process;
+};
+
+const imageService = { upload, get, getUserImages, getProcessResults, getUserProcesses, getProcess };
+export default imageService;

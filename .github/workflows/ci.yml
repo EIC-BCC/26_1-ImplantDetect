@@ -64,7 +64,7 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Build api
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: implantdetect-backend/Dockerfile
@@ -75,7 +75,7 @@ jobs:
       # Removido devido a dependência do modelo, que é muito grande para o cache do GitHub Actions. O build da previsão será feito localmente.
       
       # - name: Build prediction
-      #   uses: docker/build-push-action@v6
+      #   uses: docker/build-push-action@v7
       #   with:
       #     context: .
       #     file: implantdetect-prediction/Dockerfile
@@ -84,7 +84,7 @@ jobs:
       #     cache-to: type=gha,mode=max,scope=prediction
 
       - name: Build frontend
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: implantdetect-frontend
           file: implantdetect-frontend/Dockerfile

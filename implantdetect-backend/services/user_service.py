@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import NoReturn
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +20,7 @@ class UserService:
     def __init__(self, db: AsyncSession):
         self.dao = UserDao(db)
 
-    async def _handle_user_not_found(self):
+    async def _handle_user_not_found(self) -> NoReturn:
         logger.error("Usuário não encontrado.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado."

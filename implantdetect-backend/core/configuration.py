@@ -26,7 +26,7 @@ class Settings:
     SQL_ECHO: bool = os.getenv("SQL_ECHO", "false").lower() == "true"
 
     YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "yolo11m-obb.pt")
-    RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+    RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/")
 
 
 settings = Settings()

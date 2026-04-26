@@ -15,7 +15,7 @@ class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL") or _require("DATABASE_URL")
     SQL_ECHO: bool = os.getenv("SQL_ECHO", "false").lower() == "true"
 
-    RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+    RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/")
     YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "yolo11m-obb.pt")
 
 

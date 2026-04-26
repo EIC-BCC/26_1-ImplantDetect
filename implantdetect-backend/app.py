@@ -45,7 +45,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -91,4 +91,4 @@ async def get_protected_image(file_hash: str):
 
 if __name__ == "__main__":
     logger.info("Inicializando o backend do ImplantDetect...")
-    uvicorn.run("app:app", host="localhost", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

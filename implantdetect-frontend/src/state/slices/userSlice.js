@@ -2,13 +2,13 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import UserService from "../services/userService";
 
 const loadTokenFromLocalStorage = () => {
-    try {
-        const storedToken = localStorage.getItem("token");
-        return storedToken && storedToken !== "undefined" ? storedToken : null;
-    } catch (e) {
-        console.error("Error parsing token from localStorage:", e);
-        return null;
-    }
+  try {
+    const storedToken = localStorage.getItem("token");
+    return storedToken && storedToken !== "undefined" ? storedToken : null;
+  } catch (e) {
+    console.error("Error parsing token from localStorage:", e);
+    return null;
+  }
 };
 
 const token = loadTokenFromLocalStorage();
@@ -69,9 +69,10 @@ const userSlice = createSlice({
         const response = action.payload;
         // O backend retorna apenas o token, não o user
         state.user = { username: response.username || "" }; // ou null se não houver username
-        state.token = response.token || response.access_token
-          ? `${response.token_type || "Bearer"} ${response.access_token || response.token}`
-          : null;
+        state.token =
+          response.token || response.access_token
+            ? `${response.token_type || "Bearer"} ${response.access_token || response.token}`
+            : null;
         localStorage.setItem("user", JSON.stringify(state.user));
         localStorage.setItem("token", state.token);
       })

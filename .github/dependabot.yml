@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /implantdetect-backend
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: /implantdetect-prediction
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: /implantdetect-shared
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: npm
+    directory: /implantdetect-frontend
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint-backend:
+    name: Lint & type-check backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: implantdetect-backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install ruff mypy
+          pip install implantdetect-shared/
+          pip install -r implantdetect-backend/requirements.txt
+        working-directory: ${{ github.workspace }}
+
+      - name: Ruff lint
+        run: ruff check implantdetect-backend/ implantdetect-prediction/ implantdetect-shared/
+
+      - name: Ruff format check
+        run: ruff format --check implantdetect-backend/ implantdetect-prediction/ implantdetect-shared/
+
+      - name: Mypy
+        run: mypy implantdetect-backend/ --ignore-missing-imports
+        working-directory: ${{ github.workspace }}
+
+  lint-frontend:
+    name: Lint frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: implantdetect-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: implantdetect-frontend
+
+      - name: ESLint
+        run: npm run lint
+        working-directory: implantdetect-frontend
+
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build api
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: implantdetect-backend/Dockerfile
+          push: false
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+
+      - name: Build prediction
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: implantdetect-prediction/Dockerfile
+          push: false
+          cache-from: type=gha,scope=prediction
+          cache-to: type=gha,mode=max,scope=prediction
+
+      - name: Build frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: implantdetect-frontend
+          file: implantdetect-frontend/Dockerfile
+          push: false
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend

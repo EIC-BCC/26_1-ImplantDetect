@@ -1,20 +1,8 @@
-from pydantic import BaseModel
 from typing import Optional
+from pydantic import BaseModel
 from models.entities.image import Image
 
-class ProcessPredictionResponse(BaseModel):
-    class_name: str
-    confidence: float
-    bounding_box: dict
 
-    @staticmethod
-    def from_dict(data: dict) -> 'ProcessPredictionResponse':
-        return ProcessPredictionResponse(
-            class_name=data.get('name', 0),
-            confidence=data.get('confidence', 0.0),
-            bounding_box=data.get('box', {})
-        )
-    
 class ProcessResultsResponse(BaseModel):
     process_id: int
     class_name: str
@@ -31,7 +19,9 @@ class ProcessResultsResponse(BaseModel):
     image_url: str | None = None
 
     @classmethod
-    def from_orm(cls, result, class_name: str = "Unknown", image: Optional[Image] = None):
+    def from_orm(
+        cls, result, class_name: str = "Unknown", image: Optional[Image] = None
+    ):
         return cls(
             process_id=result.process_id,
             class_name=class_name,
@@ -45,8 +35,9 @@ class ProcessResultsResponse(BaseModel):
             bb_x4_center=result.bb_x4_center,
             bb_y4_center=result.bb_y4_center,
             message=result.message,
-            image_url=image.file_hash + image.file_extension if image else None
+            image_url=image.file_hash + image.file_extension if image else None,
         )
+
 
 class ProcessResponse(BaseModel):
     process_id: int
@@ -66,5 +57,5 @@ class ProcessResponse(BaseModel):
             status=process.status,
             status_name=status_name,
             created_at=str(process.created_at),
-            updated_at=str(process.updated_at)
+            updated_at=str(process.updated_at),
         )

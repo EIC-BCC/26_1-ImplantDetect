@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+implantdetect-training
+runs
+.git
+.claude
+**/__pycache__
+**/.mypy_cache
+**/.venv
+**/*.pyc
+**/*.pyo

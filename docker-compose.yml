@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     container_name: implantdetect-database
     environment:
       POSTGRES_DB: implantdetect
@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     networks:
       - implantdetect-network
     healthcheck:
@@ -19,7 +19,7 @@ services:
       retries: 5
 
   rabbitmq:
-    image: rabbitmq:3.13-management-alpine
+    image: rabbitmq:4.3.0-management-alpine
     container_name: implantdetect-rabbitmq
     ports:
       - "5672:5672"

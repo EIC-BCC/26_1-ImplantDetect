@@ -74,7 +74,7 @@ const ImageUpload = () => {
                 <p className="lead text-center">Envie a imagem de Raio X para análise.</p>
                 <form noValidate onSubmit={handleSubmit}>
                     <div className="form-floating mb-3">
-                        <input type="file" className={`form-control ${formErrors.file ? 'is-invalid' : ''}`} id="floatingFile" name="file" accept=".jpg, .jpeg, .png, .pdf, .txt" onChange={handleChange} />
+                        <input type="file" className={`form-control ${formErrors.file ? 'is-invalid' : ''}`} id="floatingFile" name="file" accept=".jpg, .jpeg, .png" onChange={handleChange} />
                         <label htmlFor="floatingInput">Arquivo</label>
                         <div className="invalid-feedback">{formErrors.file}</div>
                     </div>

@@ -1,20 +1,8 @@
-from pydantic import BaseModel
 from typing import Optional
+from pydantic import BaseModel
 from models.entities.image import Image
 
-class ProcessPredictionResponse(BaseModel):
-    class_name: str
-    confidence: float
-    bounding_box: dict
 
-    @staticmethod
-    def from_dict(data: dict) -> 'ProcessPredictionResponse':
-        return ProcessPredictionResponse(
-            class_name=data.get('name', 0),
-            confidence=data.get('confidence', 0.0),
-            bounding_box=data.get('box', {})
-        )
-    
 class ProcessResultsResponse(BaseModel):
     process_id: int
     class_name: str

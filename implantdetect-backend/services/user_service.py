@@ -18,7 +18,7 @@ class UserService:
         logger.error("Usuário não encontrado.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail="Usuário não encontrado."
         )
 
     async def add_user(self, user_data: UserRegisterRequest):
@@ -31,7 +31,7 @@ class UserService:
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username or email already registered"
+                detail="Nome de usuário ou email já cadastrado."
             )
             
         user = await self.dao.add_user(user_data)
@@ -46,7 +46,7 @@ class UserService:
             await self._handle_user_not_found()
 
         if not verify_password(password, str(user.hashed_password)):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciais inválidas.")
         
         access_token = create_access_token(
             data={"sub": str(user.id)},
@@ -74,11 +74,3 @@ class UserService:
         logger.info(f"Dados do usuário {user.username} ({user.email}) atualizados com sucesso.")
         return user
 
-    # async def remove_user(self, user_id: int):
-    #     user = await self.dao.remove_user(user_id)
-        
-    #     if not user:
-    #         await self._handle_user_not_found()
-        
-    #     logger.info(f"Usuário {user.username} ({user.email}) removido com sucesso.")
-    #     return user

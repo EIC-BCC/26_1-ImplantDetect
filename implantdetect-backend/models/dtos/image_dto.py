@@ -1,9 +1,5 @@
 from pydantic import BaseModel
 
-class ImageUploadRequest(BaseModel):
-    image: bytes
-    user_id: int
-    
 class ImageResponse(BaseModel):
     image_id: int
     user_id: int

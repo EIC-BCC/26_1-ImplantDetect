@@ -1,14 +1,11 @@
 import * as yup from 'yup';
 
-const validFileExtensions = {
-    image: ['jpg', 'jpeg', 'png', 'gif'],
-    document: ['pdf', 'txt'],
-};
+const validFileExtensions = ['jpg', 'jpeg', 'png'];
 
 const validFileSize = 1024 * 1024 * 15;
 
-function isValidFileType(fileName, fileType) {
-    return fileName && validFileExtensions[fileType].includes(fileName.split('.').pop().toLowerCase());
+function isValidFileType(fileName) {
+    return fileName && validFileExtensions.includes(fileName.split('.').pop().toLowerCase());
 }
 
 export const imageFormSchema = yup.object().shape({
@@ -18,7 +15,6 @@ export const imageFormSchema = yup.object().shape({
             return value && value.size <= validFileSize;
         })
         .test("is-valid-type", "Tipo de arquivo não suportado.", value => {
-            return value && (isValidFileType(value.name, 'image') || isValidFileType(value.name, 'document'));
+            return value && isValidFileType(value.name);
         }),
-    expiry_date: yup.string(),
 });

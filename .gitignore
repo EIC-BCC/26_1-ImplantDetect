@@ -186,16 +186,8 @@ cython_debug/
 !*.yaml
 # !*.txt
 
-# # Ignore everything inside models/ directory
-# /models/**
-# # Except for subdirectories
-# !/models/**/
-# # And except for *.pt
-# !/models/**/*.pt
-# !/models/**/*.png
-# !/models/**/labels.jpg
-# !/models/**/labels_correlogram.jpg
-# !/models/**/args.yaml
-
 # Do not ignore .env.example
 !.env.example
+
+# Ignore .claude directory
+.claude/

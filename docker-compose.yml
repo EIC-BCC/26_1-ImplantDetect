@@ -1,0 +1,106 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: implantdetect-database
+    environment:
+      POSTGRES_DB: implantdetect
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - implantdetect-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d implantdetect"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: implantdetect-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - implantdetect-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  api:
+    image: implantdetect-api
+    build:
+      context: .
+      dockerfile: implantdetect-backend/Dockerfile
+    container_name: implantdetect-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://root:password@postgres:5432/implantdetect
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - PYTHONPATH=/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - implantdetect-network
+    volumes:
+      - uploads_data:/app/uploads
+      - ./implantdetect-backend/logs:/app/logs:rw
+
+  prediction:
+    image: implantdetect-prediction
+    build:
+      context: .
+      dockerfile: implantdetect-prediction/Dockerfile
+    container_name: implantdetect-prediction
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://root:password@postgres:5432/implantdetect
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - UPLOAD_FILE_PATH=/app/uploads
+      - YOLO_MODEL_PATH=/app/yolo_weights/best.pt
+      - PYTHONPATH=/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - implantdetect-network
+    volumes:
+      - uploads_data:/app/uploads
+      - ./implantdetect-training/models/checkpoints/pipeline_completo_clahe_v8_small_200e/weights:/app/yolo_weights:ro
+      - prediction_logs:/app/logs
+
+  frontend:
+    image: implantdetect-frontend
+    build:
+      context: implantdetect-frontend
+      dockerfile: Dockerfile
+    container_name: implantdetect-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - implantdetect-network
+
+volumes:
+  postgres_data:
+  uploads_data:
+  prediction_logs:
+
+networks:
+  implantdetect-network:
+    driver: bridge

@@ -42,7 +42,6 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/logout" element={<Logout />} />
-            <Route path="/images/upload" element={<ImageUpload />} />
             <Route path="/process/:process_id/results" element={<ImageResults />} />
             <Route
               path="/home"

@@ -1,5 +1,5 @@
 implantdetect-shared @ file:///app/shared
-aio-pika==9.4.3
+aio-pika==9.6.2
 asyncpg==0.30.0
 pillow==11.3.0
 pydantic==2.11.7

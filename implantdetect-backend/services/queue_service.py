@@ -26,15 +26,21 @@ class QueueService:
             await self._connection.close()
         logger.info("Desconectado do RabbitMQ")
 
-    async def publish_prediction_request(self, process_id: int, file_hash: str, file_extension: str):
+    async def publish_prediction_request(
+        self, process_id: int, file_hash: str, file_extension: str
+    ):
         if not self._channel:
             raise RuntimeError("QueueService não conectado ao RabbitMQ")
 
-        payload = PredictionRequest(
-            process_id=process_id,
-            file_hash=file_hash,
-            file_extension=file_extension,
-        ).model_dump_json().encode()
+        payload = (
+            PredictionRequest(
+                process_id=process_id,
+                file_hash=file_hash,
+                file_extension=file_extension,
+            )
+            .model_dump_json()
+            .encode()
+        )
 
         await self._channel.default_exchange.publish(
             Message(body=payload, delivery_mode=DeliveryMode.PERSISTENT),

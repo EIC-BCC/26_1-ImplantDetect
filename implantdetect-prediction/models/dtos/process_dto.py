@@ -19,9 +19,9 @@ class ProcessPredictionResponse(BaseModel):
     bounding_box: OBBCorners
 
     @staticmethod
-    def from_dict(data: dict) -> 'ProcessPredictionResponse':
+    def from_dict(data: dict) -> "ProcessPredictionResponse":
         return ProcessPredictionResponse(
-            class_name=data.get('name', ''),
-            confidence=data.get('confidence', 0.0),
-            bounding_box=data.get('box', {}),
+            class_name=data.get("name", ""),
+            confidence=data.get("confidence", 0.0),
+            bounding_box=data.get("box", {}),
         )

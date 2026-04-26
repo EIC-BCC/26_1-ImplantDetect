@@ -7,7 +7,7 @@ from implantdetect_shared.entities.base import Base
 
 
 class ProcessResults(Base):
-    __tablename__ = 'process_results'
+    __tablename__ = "process_results"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     process_id: Mapped[int] = mapped_column(Integer, nullable=False)
     class_id: Mapped[int] = mapped_column(Integer, nullable=True)

@@ -33,9 +33,13 @@ async def handle_message(message: IncomingMessage):
             label_dao = LabelDao(session)
 
             try:
-                await process_dao.update_process_status(request.process_id, ProcessStatus.RUNNING)
+                await process_dao.update_process_status(
+                    request.process_id, ProcessStatus.RUNNING
+                )
 
-                predictions = await yolo.predict(request.file_hash, request.file_extension)
+                predictions = await yolo.predict(
+                    request.file_hash, request.file_extension
+                )
 
                 for prediction in predictions:
                     label = await label_dao.get_label_by_name(prediction.class_name)
@@ -44,23 +48,32 @@ async def handle_message(message: IncomingMessage):
                         process_id=request.process_id,
                         class_id=label.id if label else None,
                         confidence=prediction.confidence,
-                        bb_x1_center=bb['x1'],
-                        bb_y1_center=bb['y1'],
-                        bb_x2_center=bb['x2'],
-                        bb_y2_center=bb['y2'],
-                        bb_x3_center=bb['x3'],
-                        bb_y3_center=bb['y3'],
-                        bb_x4_center=bb['x4'],
-                        bb_y4_center=bb['y4'],
+                        bb_x1_center=bb["x1"],
+                        bb_y1_center=bb["y1"],
+                        bb_x2_center=bb["x2"],
+                        bb_y2_center=bb["y2"],
+                        bb_x3_center=bb["x3"],
+                        bb_y3_center=bb["y3"],
+                        bb_x4_center=bb["x4"],
+                        bb_y4_center=bb["y4"],
                     )
                     await process_dao.add_process_result(result)
 
-                await process_dao.update_process_status(request.process_id, ProcessStatus.COMPLETED)
-                logger.info(f"Processo {request.process_id} concluído com {len(predictions)} predições.")
+                await process_dao.update_process_status(
+                    request.process_id, ProcessStatus.COMPLETED
+                )
+                logger.info(
+                    f"Processo {request.process_id} concluído com {len(predictions)} predições."
+                )
 
             except Exception as e:
-                logger.error(f"Erro ao processar processo {request.process_id}: {e}", exc_info=True)
-                await process_dao.update_process_status(request.process_id, ProcessStatus.FAILED)
+                logger.error(
+                    f"Erro ao processar processo {request.process_id}: {e}",
+                    exc_info=True,
+                )
+                await process_dao.update_process_status(
+                    request.process_id, ProcessStatus.FAILED
+                )
                 await process_dao.add_process_result(
                     ProcessResults(process_id=request.process_id, message=str(e))
                 )
@@ -78,7 +91,9 @@ async def main():
 
     async with connection:
         channel = await connection.channel()
-        await channel.set_qos(prefetch_count=1)  # one message at a time: YOLO inference is GPU/CPU-bound
+        await channel.set_qos(
+            prefetch_count=1
+        )  # one message at a time: YOLO inference is GPU/CPU-bound
         queue = await channel.declare_queue(PREDICTION_QUEUE, durable=True)
 
         await queue.consume(handle_message)

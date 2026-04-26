@@ -13,17 +13,21 @@ class ProcessDao:
         result = await self.db.execute(select(Process).filter(Process.id == process_id))
         return result.scalars().first()
 
-    async def update_process_status(self, process_id: int, status: int) -> Process | None:
+    async def update_process_status(
+        self, process_id: int, status: int
+    ) -> Process | None:
         process = await self.get_process_by_id(process_id)
         if process:
-            setattr(process, 'status', status)
+            setattr(process, "status", status)
             self.db.add(process)
             await self.db.commit()
             await self.db.refresh(process)
             return process
         return None
 
-    async def add_process_result(self, process_result: ProcessResults) -> ProcessResults:
+    async def add_process_result(
+        self, process_result: ProcessResults
+    ) -> ProcessResults:
         self.db.add(process_result)
         await self.db.commit()
         await self.db.refresh(process_result)

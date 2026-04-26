@@ -26,9 +26,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode.update({"exp": int(expire.timestamp())})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
+
 def verify_access_token(token: str) -> Optional[JWTPayload]:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         return payload
     except JWTError:
         return None
@@ -37,6 +40,7 @@ def verify_access_token(token: str) -> Optional[JWTPayload]:
 def hash_password(password: str) -> str:
     salted = (password + settings.SECRET_KEY).encode()
     return hashlib.sha256(salted).hexdigest()
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return hmac.compare_digest(hash_password(plain_password), hashed_password)

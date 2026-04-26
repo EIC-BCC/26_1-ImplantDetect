@@ -3,6 +3,7 @@ from models.entities.base import Base
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column
 
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)

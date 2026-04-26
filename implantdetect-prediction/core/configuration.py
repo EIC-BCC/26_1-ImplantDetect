@@ -3,8 +3,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def _require(name: str) -> str:
     raise ValueError(f"Required environment variable '{name}' is not set.")
+
 
 class Settings:
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
@@ -15,5 +17,6 @@ class Settings:
 
     RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
     YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "yolo11m-obb.pt")
+
 
 settings = Settings()

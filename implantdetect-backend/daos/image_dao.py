@@ -11,6 +11,7 @@ from enums.general_status import GeneralStatus
 
 logger = get_logger(__name__)
 
+
 class ImageDAO:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -49,7 +50,7 @@ class ImageDAO:
             logger.error(f"Erro ao salvar a imagem: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Erro ao salvar a imagem: {str(e)}"
+                detail=f"Erro ao salvar a imagem: {str(e)}",
             )
 
     async def add_image(self, image: Image) -> Image:
@@ -58,24 +59,32 @@ class ImageDAO:
             await self.db.flush()
             await self.db.refresh(image)
             return image
-        
+
         except Exception as e:
             logger.error(f"Erro ao adicionar imagem ao banco de dados: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Erro ao adicionar imagem ao banco de dados: {str(e)}"
+                detail=f"Erro ao adicionar imagem ao banco de dados: {str(e)}",
             )
 
     async def get_all_images_from_user(self, user_id: int):
         result = await self.db.execute(
-            select(Image).filter(Image.user_id == user_id, Image.active == GeneralStatus.ACTIVE)
+            select(Image).filter(
+                Image.user_id == user_id, Image.active == GeneralStatus.ACTIVE
+            )
         )
         return list(result.scalars().all())
 
     async def get_image_by_id(self, image_id: int) -> Image | None:
         result = await self.db.execute(select(Image).filter(Image.id == image_id))
         return result.scalars().first()
-    
-    async def get_image_by_hash(self, file_hash: str, file_extension: str) -> Image | None:
-        result = await self.db.execute(select(Image).filter(Image.file_hash == file_hash, Image.file_extension == file_extension))
+
+    async def get_image_by_hash(
+        self, file_hash: str, file_extension: str
+    ) -> Image | None:
+        result = await self.db.execute(
+            select(Image).filter(
+                Image.file_hash == file_hash, Image.file_extension == file_extension
+            )
+        )
         return result.scalars().first()

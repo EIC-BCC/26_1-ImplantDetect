@@ -6,6 +6,7 @@ from models.entities.user import User
 from core.security import hash_password
 from models.dtos.user_dto import UserUpdateRequest, UserRegisterRequest
 
+
 class UserDao:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -16,8 +17,8 @@ class UserDao:
 
     async def add_user(self, user: UserRegisterRequest) -> User:
         user_data = user.model_dump()
-        password = user_data.pop('password')
-        user_data['hashed_password'] = hash_password(password)
+        password = user_data.pop("password")
+        user_data["hashed_password"] = hash_password(password)
         user_entity = User(**user_data)
         self.db.add(user_entity)
         await self.db.commit()

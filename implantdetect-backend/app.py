@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 
 os.makedirs(settings.IMAGE_REPOSITORY, exist_ok=True)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -29,6 +30,7 @@ async def lifespan(app: FastAPI):
     await queue_service.disconnect()
     logger.info("Aplicativo encerrando, liberando recursos")
 
+
 docs_enabled = settings.ENVIRONMENT != "production"
 
 app = FastAPI(
@@ -38,7 +40,7 @@ app = FastAPI(
     openapi_url="/openapi.json" if docs_enabled else None,
     version="1.0.0",
     root_path="/api",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -53,19 +55,18 @@ app.include_router(user_controller.router, prefix="/users", tags=["users"])
 app.include_router(image_controller.router, prefix="/images", tags=["images"])
 app.include_router(process_controller.router, prefix="/processing", tags=["processing"])
 
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     return JSONResponse(
-        status_code=exc.status_code,
-        content=Result.error(message=exc.detail)
+        status_code=exc.status_code, content=Result.error(message=exc.detail)
     )
+
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=500,
-        content=Result.error(message=str(exc))
-    )
+    return JSONResponse(status_code=500, content=Result.error(message=str(exc)))
+
 
 @app.get("/health", tags=["health"])
 async def health_check():
@@ -79,12 +80,14 @@ async def health_check():
 
     return {"status": "ok", "database": db_status}
 
+
 @app.get("/uploads/{file_hash}", tags=["uploads"])
 async def get_protected_image(file_hash: str):
     file_path = os.path.join("uploads", file_hash)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
     return FileResponse(file_path)
+
 
 if __name__ == "__main__":
     logger.info("Inicializando o backend do ImplantDetect...")

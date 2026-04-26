@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.7.1-cuda12.8-cudnn9-runtime
+FROM pytorch/pytorch:2.11.0-cuda13.0-cudnn9-runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
@@ -12,14 +12,14 @@ ENV YOLO_CONFIG_DIR=/app/.ultralytics
 WORKDIR /app
 
 COPY implantdetect-shared/ /app/shared/
-RUN pip install --no-cache-dir /app/shared
+RUN pip install --upgrade pip --break-system-packages && pip install --no-cache-dir --break-system-packages /app/shared
 
 COPY implantdetect-prediction/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
 COPY implantdetect-prediction/ /app/
 
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
+RUN useradd -u 5678 --no-create-home --shell /bin/sh appuser && \
     chown -R appuser /app && \
     mkdir -p /app/uploads /app/logs /app/.ultralytics && \
     chown -R appuser:appuser /app/uploads /app/logs /app/.ultralytics

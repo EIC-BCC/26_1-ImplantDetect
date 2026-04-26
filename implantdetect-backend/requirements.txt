@@ -1,4 +1,4 @@
-aio-pika==9.4.3
+aio-pika==9.6.2
 asyncpg==0.30.0
 fastapi==0.115.14
 gunicorn==23.0.0

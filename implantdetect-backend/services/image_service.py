@@ -7,7 +7,7 @@ from core.logging import get_logger
 from daos.image_dao import ImageDAO
 from models.entities.image import Image
 from core.configuration import settings
-from models.dtos.image_dto import ImageResponse, ImageUploadResponse
+from models.dtos.image_dto import ImageResponse
 from services.process_service import ProcessService
 
 logger = get_logger(__name__)

@@ -1,4 +1,3 @@
-import os
 import hashlib
 from pathlib import Path
 from fastapi import UploadFile, HTTPException, status

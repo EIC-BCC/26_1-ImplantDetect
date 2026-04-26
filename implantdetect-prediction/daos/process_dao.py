@@ -3,7 +3,6 @@ from sqlalchemy.future import select
 
 from models.entities.process import Process
 from models.entities.process_results import ProcessResults
-from enums.process_status import ProcessStatus
 
 
 class ProcessDao:

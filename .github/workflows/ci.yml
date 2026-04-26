@@ -72,14 +72,16 @@ jobs:
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
 
-      - name: Build prediction
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: implantdetect-prediction/Dockerfile
-          push: false
-          cache-from: type=gha,scope=prediction
-          cache-to: type=gha,mode=max,scope=prediction
+      # Removido devido a dependência do modelo, que é muito grande para o cache do GitHub Actions. O build da previsão será feito localmente.
+      
+      # - name: Build prediction
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: .
+      #     file: implantdetect-prediction/Dockerfile
+      #     push: false
+      #     cache-from: type=gha,scope=prediction
+      #     cache-to: type=gha,mode=max,scope=prediction
 
       - name: Build frontend
         uses: docker/build-push-action@v6

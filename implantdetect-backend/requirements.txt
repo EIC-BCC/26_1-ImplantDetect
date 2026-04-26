@@ -1,4 +1,3 @@
-implantdetect-shared @ file:///app/shared
 aio-pika==9.4.3
 asyncpg==0.30.0
 fastapi==0.115.14

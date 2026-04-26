@@ -24,7 +24,26 @@ const ImageResults = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [hoveredBox, setHoveredBox] = useState(null);
   const [visibleBoxes, setVisibleBoxes] = useState(new Set());
+  const [imgSize, setImgSize] = useState({ width: 1, height: 1 });
   const imageRef = useRef(null);
+
+  const isValidResult = (result) => {
+    if (result.message) return false;
+    if (result.class_name === "Classe None" || !result.class_name) return false;
+    if (
+      result.bb_x1_center == null ||
+      result.bb_y1_center == null ||
+      result.bb_x2_center == null ||
+      result.bb_y2_center == null ||
+      result.bb_x3_center == null ||
+      result.bb_y3_center == null ||
+      result.bb_x4_center == null ||
+      result.bb_y4_center == null
+    ) {
+      return false;
+    }
+    return true;
+  };
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -35,6 +54,8 @@ const ImageResults = () => {
         setResults(data);
         if (data?.length > 0) {
           setImageUrl(`/api/uploads/${data[0].image_url}`);
+          const valid = data.filter(isValidResult);
+          setVisibleBoxes(new Set(valid.map((_, idx) => idx)));
         }
       } catch (err) {
         setError(
@@ -48,32 +69,6 @@ const ImageResults = () => {
     };
     fetchResults();
   }, [process_id]);
-
-  // Inicializar visibleBoxes quando results mudar
-  useEffect(() => {
-    if (results.length > 0) {
-      const isValidResult = (result) => {
-        if (result.message) return false;
-        if (result.class_name === "Classe None" || !result.class_name)
-          return false;
-        if (
-          result.bb_x1_center == null ||
-          result.bb_y1_center == null ||
-          result.bb_x2_center == null ||
-          result.bb_y2_center == null ||
-          result.bb_x3_center == null ||
-          result.bb_y3_center == null ||
-          result.bb_x4_center == null ||
-          result.bb_y4_center == null
-        ) {
-          return false;
-        }
-        return true;
-      };
-      const valid = results.filter(isValidResult);
-      setVisibleBoxes(new Set(valid.map((_, idx) => idx)));
-    }
-  }, [results]);
 
   const toggleRow = (index) => {
     setExpandedRow(expandedRow === index ? null : index);
@@ -93,7 +88,10 @@ const ImageResults = () => {
 
   const handleImageLoad = () => {
     if (imageRef.current) {
-      setVisibleBoxes((prev) => new Set(prev));
+      setImgSize({
+        width: imageRef.current.naturalWidth || 1,
+        height: imageRef.current.naturalHeight || 1,
+      });
     }
   };
 
@@ -115,27 +113,6 @@ const ImageResults = () => {
         <div className="alert alert-danger">{error}</div>
       </div>
     );
-
-  const isValidResult = (result) => {
-    if (result.message) return false;
-
-    if (result.class_name === "Classe None" || !result.class_name) return false;
-
-    if (
-      result.bb_x1_center == null ||
-      result.bb_y1_center == null ||
-      result.bb_x2_center == null ||
-      result.bb_y2_center == null ||
-      result.bb_x3_center == null ||
-      result.bb_y3_center == null ||
-      result.bb_x4_center == null ||
-      result.bb_y4_center == null
-    ) {
-      return false;
-    }
-
-    return true;
-  };
 
   const validResults = results.filter(isValidResult);
   const hasErrors = results.length > 0 && validResults.length === 0;
@@ -242,7 +219,7 @@ const ImageResults = () => {
                           height: "100%",
                           pointerEvents: "none",
                         }}
-                        viewBox={`0 0 ${imageRef.current?.naturalWidth || 1} ${imageRef.current?.naturalHeight || 1}`}
+                        viewBox={`0 0 ${imgSize.width} ${imgSize.height}`}
                         preserveAspectRatio="none"
                       >
                         <polygon

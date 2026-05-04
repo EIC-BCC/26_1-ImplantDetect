@@ -3,7 +3,10 @@ from sqlalchemy.future import select
 from sqlalchemy import or_
 
 from implantdetect_shared.entities.user import User
-from implantdetect_shared.models.dtos.user_dto import UserUpdateRequest, UserRegisterRequest
+from implantdetect_shared.models.dtos.user_dto import (
+    UserUpdateRequest,
+    UserRegisterRequest,
+)
 
 
 class UserDao:

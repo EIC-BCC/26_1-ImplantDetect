@@ -22,8 +22,16 @@ class UserTokenResponse(BaseModel):
     role: str
 
     @classmethod
-    def from_token(cls, token: str, user_id: int, username: str, role: str) -> "UserTokenResponse":
-        return cls(access_token=token, token_type="Bearer", user_id=user_id, username=username, role=role)
+    def from_token(
+        cls, token: str, user_id: int, username: str, role: str
+    ) -> "UserTokenResponse":
+        return cls(
+            access_token=token,
+            token_type="Bearer",
+            user_id=user_id,
+            username=username,
+            role=role,
+        )
 
 
 class UserResponse(BaseModel):

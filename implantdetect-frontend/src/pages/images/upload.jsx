@@ -1,67 +1,78 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import ImageService from "../../state/services/imageService";
-import { imageFormSchema } from "../../utils/imageFormValidation";
+import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Upload as UploadIcon, FileImage, X, AlertCircle } from 'lucide-react';
 
-const ImageUpload = () => {
-  const [formData, setFormData] = useState({
-    file: null,
-  });
+import ImageService from '../../state/services/imageService';
+import { imageFormSchema } from '../../utils/imageFormValidation';
+import Button from '../../components/ui/Button';
+import Alert from '../../components/ui/Alert';
+import Card from '../../components/ui/Card';
 
-  const [formErrors, setFormErrors] = useState({
-    file: "",
-  });
-
+const Upload = () => {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.currentTarget;
-    if (files) {
-      if (name === "file") {
-        const file = files[0];
-        setFormData({ ...formData, [name]: file });
-      } else {
-        setFormData({ ...formData, [name]: files[0] });
-      }
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+  const handleFile = (selectedFile) => {
+    if (!selectedFile) return;
+    setFile(selectedFile);
+    setError('');
 
-    setFormErrors({ ...formErrors, [name]: null });
+    if (selectedFile.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result);
+      reader.readAsDataURL(selectedFile);
+    } else {
+      setPreview(null);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const droppedFile = e.dataTransfer.files[0];
+    handleFile(droppedFile);
+  };
+
+  const handleDragOver = (e) => { e.preventDefault(); setDragOver(true); };
+  const handleDragLeave = () => setDragOver(false);
+
+  const removeFile = () => {
+    setFile(null);
+    setPreview(null);
+    setError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
-      await imageFormSchema.validate(formData, { abortEarly: false });
+      await imageFormSchema.validate({ file }, { abortEarly: false });
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await ImageService.upload(formData);
 
-      const submitData = new FormData();
-      submitData.append("image", formData.file);
-
-      const response = await ImageService.upload(submitData);
       if (response?.process_id) {
         navigate(`/process/${response.process_id}/results`);
       } else {
-        setFormErrors({
-          file: "Processo criado, mas não foi possível obter o ID do processo.",
-        });
+        setError('Processo criado, mas não foi possível obter o ID.');
       }
     } catch (err) {
-      if (err && err.inner) {
-        let errors = {};
-        err.inner.forEach((field) => {
-          errors[field.path] = field.message;
-        });
-        setFormErrors(errors);
-      } else if (err && err.detail) {
-        setFormErrors({ file: err.detail || "Erro ao enviar imagem." });
-      } else if (typeof err === "string") {
-        setFormErrors({ file: err });
+      if (err?.inner) {
+        setError(err.inner.map((e) => e.message).join('. '));
+      } else if (err?.detail) {
+        setError(err.detail);
+      } else if (typeof err === 'string') {
+        setError(err);
       } else {
-        setFormErrors({ file: "Erro inesperado ao enviar imagem." });
+        setError('Erro inesperado ao enviar imagem.');
         console.error(err);
       }
     } finally {
@@ -70,41 +81,123 @@ const ImageUpload = () => {
   };
 
   return (
-    <div
-      className="container"
-      style={{ maxWidth: "48em", margin: "0 auto", padding: "3em 1em" }}
-    >
-      <main>
-        <h1 className="text-center">Upload de Imagem</h1>
-        <p className="lead text-center">
-          Envie a imagem de Raio X para análise.
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Upload de Raio X</h1>
+        <p className="text-gray-500 mt-2">
+          Envie uma imagem de radiografia panorâmica para análise por inteligência artificial.
         </p>
-        <form noValidate onSubmit={handleSubmit}>
-          <div className="form-floating mb-3">
+      </div>
+
+      <Card>
+        <form onSubmit={handleSubmit}>
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onClick={() => fileInputRef.current?.click()}
+            className={`
+              relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
+              ${dragOver
+                ? 'border-primary-500 bg-primary-50'
+                : file
+                  ? 'border-green-300 bg-green-50'
+                  : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+              }
+            `}
+          >
             <input
+              ref={fileInputRef}
               type="file"
-              className={`form-control ${formErrors.file ? "is-invalid" : ""}`}
-              id="floatingFile"
-              name="file"
-              accept=".jpg, .jpeg, .png"
-              onChange={handleChange}
+              accept=".jpg,.jpeg,.png"
+              onChange={(e) => handleFile(e.target.files[0])}
+              className="hidden"
             />
-            <label htmlFor="floatingInput">Arquivo</label>
-            <div className="invalid-feedback">{formErrors.file}</div>
+
+            {file ? (
+              <div className="space-y-4">
+                {preview && (
+                  <div className="relative inline-block">
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="max-h-64 rounded-lg shadow-md mx-auto"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); removeFile(); }}
+                      className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-md"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+                <div className="flex items-center justify-center gap-2 text-green-700">
+                  <FileImage className="h-5 w-5" />
+                  <span className="font-medium">{file.name}</span>
+                  <span className="text-sm text-green-500">
+                    ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                  <UploadIcon className="h-8 w-8 text-gray-400" />
+                </div>
+                <div>
+                  <p className="text-gray-700 font-medium">
+                    Arraste e solte sua imagem aqui
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    ou clique para selecionar um arquivo
+                  </p>
+                </div>
+                <p className="text-xs text-gray-400">
+                  Formatos suportados: JPG, JPEG, PNG • Máximo: 15MB
+                </p>
+              </div>
+            )}
           </div>
-          <div className="text-start my-3">
-            <button
-              className="w-100 btn btn-lg btn-outline-success"
+
+          {error && (
+            <div className="mt-4">
+              <Alert variant="error" title="Erro no envio">
+                {error}
+              </Alert>
+            </div>
+          )}
+
+          <div className="mt-6">
+            <Button
               type="submit"
-              disabled={loading}
+              className="w-full"
+              size="lg"
+              loading={loading}
+              disabled={!file}
+              icon={UploadIcon}
             >
-              {loading ? "Enviando..." : "Enviar"}
-            </button>
+              {loading ? 'Processando...' : 'Enviar para Análise'}
+            </Button>
           </div>
         </form>
-      </main>
+      </Card>
+
+      <div className="mt-6 bg-blue-50 rounded-xl p-5 border border-blue-100">
+        <div className="flex gap-3">
+          <AlertCircle className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+          <div className="text-sm text-blue-700">
+            <p className="font-medium mb-1">Dicas para melhores resultados:</p>
+            <ul className="list-disc list-inside space-y-1 text-blue-600">
+              <li>Utilize radiografias panorâmicas de boa qualidade</li>
+              <li>Certifique-se de que a imagem está nítida e bem iluminada</li>
+              <li>Formatos JPG e PNG são recomendados</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default ImageUpload;
+export default Upload;

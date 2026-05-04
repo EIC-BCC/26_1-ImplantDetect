@@ -9,7 +9,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from core.logging import get_logger
 from core.configuration import settings
 from implantdetect_shared.models.dtos.result_dto import Result
-from controllers import user_controller, image_controller, process_controller, admin_controller
+from controllers import (
+    user_controller,
+    image_controller,
+    process_controller,
+    admin_controller,
+)
 from core.database import create_tables, database_health_check
 from services.queue_service import queue_service
 from fastapi.middleware.cors import CORSMiddleware

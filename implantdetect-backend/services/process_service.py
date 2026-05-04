@@ -9,7 +9,10 @@ from implantdetect_shared.daos.process_dao import ProcessDao
 from implantdetect_shared.daos.image_dao import ImageDAO
 from implantdetect_shared.entities.process import Process
 from implantdetect_shared.entities.image import Image
-from implantdetect_shared.models.dtos.process_dto import ProcessResultsResponse, ProcessResponse
+from implantdetect_shared.models.dtos.process_dto import (
+    ProcessResultsResponse,
+    ProcessResponse,
+)
 from implantdetect_shared.enums.process_status import ProcessStatus
 from services.queue_service import queue_service
 

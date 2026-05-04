@@ -59,7 +59,9 @@ class UserService:
         )
 
         logger.info(f"Usuário {user.username} ({user.email}) autenticado com sucesso.")
-        return UserTokenResponse.from_token(access_token, user.id, user.username, getattr(user, "role", "user"))
+        return UserTokenResponse.from_token(
+            access_token, user.id, user.username, getattr(user, "role", "user")
+        )
 
     async def get_user(self, user_id: int):
         user = await self.dao.get_user_by_id(user_id)

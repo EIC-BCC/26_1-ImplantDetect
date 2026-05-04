@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, Fragment } from 'react';
+import { useEffect, useState, useRef, useCallback, Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Eye, EyeOff, ChevronDown, ChevronUp, ArrowLeft, Clock, Loader2, XCircle } from 'lucide-react';
 
@@ -39,12 +39,12 @@ const ImageResults = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [hoveredBox, setHoveredBox] = useState(null);
   const [visibleBoxes, setVisibleBoxes] = useState(new Set());
-  const imageRef = useRef(null);
+  const [imageDimensions, setImageDimensions] = useState(null);
   const pollingRef = useRef(null);
 
   const isTerminal = (statusName) => TERMINAL_STATUSES.includes(statusName);
 
-  const fetchProcess = async () => {
+  const fetchProcess = useCallback(async () => {
     try {
       const proc = await ImageService.getProcess(process_id);
       setProcessStatus(proc?.status_name ?? null);
@@ -52,12 +52,16 @@ const ImageResults = () => {
     } catch {
       return null;
     }
-  };
+  }, [process_id]);
 
-  const fetchResults = async () => {
+  const fetchResults = useCallback(async () => {
     try {
       const data = await ImageService.getProcessResults(process_id);
       setResults(data);
+      if (data?.length > 0) {
+        const valid = data.filter(isValidResult);
+        setVisibleBoxes(new Set(valid.map((_, idx) => idx)));
+      }
       if (data?.length > 0 && data[0].image_url) {
         const blobUrl = await ImageService.getImageBlob(data[0].image_url);
         setImageUrl(blobUrl);
@@ -65,7 +69,7 @@ const ImageResults = () => {
     } catch (err) {
       setError('Erro ao buscar resultados: ' + (err.message || 'Erro desconhecido'));
     }
-  };
+  }, [process_id]);
 
   const stopPolling = () => {
     if (pollingRef.current) {
@@ -107,14 +111,7 @@ const ImageResults = () => {
         return null;
       });
     };
-  }, [process_id]);
-
-  useEffect(() => {
-    if (results.length > 0) {
-      const valid = results.filter(isValidResult);
-      setVisibleBoxes(new Set(valid.map((_, idx) => idx)));
-    }
-  }, [results]);
+  }, [process_id, fetchProcess, fetchResults]);
 
   const toggleRow = (index) => setExpandedRow(expandedRow === index ? null : index);
   const toggleBoxVisibility = (index) => {
@@ -247,14 +244,13 @@ const ImageResults = () => {
             {imageUrl && (
               <div className="relative bg-gray-900 flex items-center justify-center">
                 <img
-                  ref={imageRef}
                   src={imageUrl}
                   alt="Radiografia"
-                  onLoad={() => setVisibleBoxes((prev) => new Set(prev))}
+                  onLoad={(e) => setImageDimensions({ width: e.currentTarget.naturalWidth, height: e.currentTarget.naturalHeight })}
                   className="max-w-full h-auto block"
                   style={{ maxHeight: '600px' }}
                 />
-                {imageRef.current && validResults.map((result, idx) => {
+                {imageDimensions && validResults.map((result, idx) => {
                   if (!visibleBoxes.has(idx)) return null;
                   const color = getColor(idx);
                   const points = `${result.bb_x1_center},${result.bb_y1_center} ${result.bb_x2_center},${result.bb_y2_center} ${result.bb_x3_center},${result.bb_y3_center} ${result.bb_x4_center},${result.bb_y4_center}`;
@@ -262,7 +258,7 @@ const ImageResults = () => {
                     <svg
                       key={idx}
                       className="absolute inset-0 w-full h-full pointer-events-none"
-                      viewBox={`0 0 ${imageRef.current.naturalWidth} ${imageRef.current.naturalHeight}`}
+                      viewBox={`0 0 ${imageDimensions.width} ${imageDimensions.height}`}
                       preserveAspectRatio="none"
                     >
                       <polygon

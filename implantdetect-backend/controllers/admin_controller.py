@@ -28,7 +28,9 @@ async def list_all_users(
     _require_admin(user)
     dao = UserDao(db)
     users = await dao.get_all_users()
-    return Result.ok(data={"users": [UserResponse.from_orm(u).model_dump() for u in users]})
+    return Result.ok(
+        data={"users": [UserResponse.from_orm(u).model_dump() for u in users]}
+    )
 
 
 @router.patch("/users/{user_id}/role", response_model=Result)

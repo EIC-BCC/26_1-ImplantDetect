@@ -4,7 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_async_db
 from core.security import get_current_user, JWTPayload
 from implantdetect_shared.models.dtos.result_dto import Result
-from implantdetect_shared.models.dtos.image_dto import ImageResponse, ImageUploadResponse
+from implantdetect_shared.models.dtos.image_dto import (
+    ImageResponse,
+    ImageUploadResponse,
+)
 from services.image_service import ImageService
 
 router = APIRouter()

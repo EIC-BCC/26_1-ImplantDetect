@@ -31,7 +31,6 @@ import History from './pages/images/History';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
 import AdminProcesses from './pages/admin/Processes';
-import AdminSettings from './pages/admin/Settings';
 
 // Pages – Errors
 import NotFound from './pages/errors/NotFound';
@@ -95,7 +94,6 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/processes" element={<AdminProcesses />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
           </Route>
         </Route>
 

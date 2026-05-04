@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_async_db
 from core.security import get_current_user, JWTPayload
-from models.dtos.result_dto import Result
-from models.dtos.image_dto import ImageResponse, ImageUploadResponse
+from implantdetect_shared.models.dtos.result_dto import Result
+from implantdetect_shared.models.dtos.image_dto import ImageResponse, ImageUploadResponse
 from services.image_service import ImageService
 
 router = APIRouter()
@@ -12,7 +12,7 @@ router = APIRouter()
 
 @router.post("/submit", response_model=Result)
 async def submit_image(
-    image: UploadFile,
+    image: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
     user: JWTPayload = Depends(get_current_user),
 ):

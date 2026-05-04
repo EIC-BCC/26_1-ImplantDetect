@@ -89,7 +89,7 @@ const History = () => {
       ) : (
         <div className="space-y-4">
           {processes.map((process) => {
-            const config = statusConfig[process.status_name] || statusConfig['Pendente'];
+            const config = statusConfig[process.status_name] ?? { icon: Clock, color: 'gray', badgeColor: 'gray' };
             const StatusIcon = config.icon;
 
             return (

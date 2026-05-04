@@ -50,7 +50,7 @@ const Header = () => {
                   <Upload className="h-4 w-4" />
                   Enviar Raio X
                 </Link>
-                <Link to="/history" className={navLinkClass('/history')}>
+                <Link to="/images/history" className={navLinkClass('/images/history')}>
                   <History className="h-4 w-4" />
                   Histórico
                 </Link>
@@ -125,7 +125,7 @@ const Header = () => {
                   <Link to="/images/upload" className={navLinkClass('/images/upload')} onClick={() => setMobileOpen(false)}>
                     <Upload className="h-4 w-4" /> Enviar Raio X
                   </Link>
-                  <Link to="/history" className={navLinkClass('/history')} onClick={() => setMobileOpen(false)}>
+                  <Link to="/images/history" className={navLinkClass('/images/history')} onClick={() => setMobileOpen(false)}>
                     <History className="h-4 w-4" /> Histórico
                   </Link>
                   <Link to="/profile" className={navLinkClass('/profile')} onClick={() => setMobileOpen(false)}>

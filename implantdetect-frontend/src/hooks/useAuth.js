@@ -10,8 +10,7 @@ const useAuth = () => {
     user,
     token,
     status,
-    isAdmin: true,
-    //isAdmin: user?.role === 'admin',
+    isAdmin: user?.role === 'admin',
     isSpecialist: user?.role === 'specialist' || user?.role === 'admin',
     isUser: !!token,
   };

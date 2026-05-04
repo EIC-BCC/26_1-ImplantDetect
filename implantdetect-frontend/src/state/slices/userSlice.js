@@ -72,7 +72,7 @@ const userSlice = createSlice({
           ? `${response.token_type || "Bearer"} ${response.access_token}`
           : null;
         state.token = token;
-        state.user = { username: response.username || "" };
+        state.user = { username: response.username || "", user_id: response.user_id ?? null, role: response.role || "user" };
         localStorage.setItem("user", JSON.stringify(state.user));
         localStorage.setItem("token", token);
       })

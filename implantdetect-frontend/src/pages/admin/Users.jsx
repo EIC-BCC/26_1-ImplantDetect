@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, UserCheck, UserX, Shield, MoreVertical } from 'lucide-react';
 
+import adminService from '../../state/services/adminService';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
@@ -19,17 +20,51 @@ const roleLabels = {
   admin: 'Administrador',
 };
 
+const ROLES = ['user', 'specialist', 'admin'];
+
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [actionMenu, setActionMenu] = useState(null);
 
-  // Placeholder — integrar com endpoint admin futuramente
   useEffect(() => {
-    setUsers([]);
-    setLoading(false);
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const data = await adminService.getUsers();
+        setUsers(data);
+      } catch (err) {
+        setError(err?.detail || err?.message || 'Erro ao carregar usuários.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
   }, []);
+
+  const handleSetRole = async (userId, role) => {
+    try {
+      const updated = await adminService.setUserRole(userId, role);
+      setUsers((prev) => prev.map((u) => (u.user_id === userId ? { ...u, ...updated } : u)));
+    } catch (err) {
+      setError(err?.detail || 'Erro ao alterar papel.');
+    } finally {
+      setActionMenu(null);
+    }
+  };
+
+  const handleToggleActive = async (userId, currentActive) => {
+    try {
+      const updated = await adminService.setUserActive(userId, !currentActive);
+      setUsers((prev) => prev.map((u) => (u.user_id === userId ? { ...u, ...updated } : u)));
+    } catch (err) {
+      setError(err?.detail || 'Erro ao alterar status.');
+    } finally {
+      setActionMenu(null);
+    }
+  };
 
   const filtered = users.filter(
     (u) =>
@@ -62,12 +97,11 @@ const AdminUsers = () => {
         </div>
       </div>
 
-      {users.length === 0 ? (
+      {error && <Alert variant="error" className="mb-2">{error}</Alert>}
+
+      {users.length === 0 && !error ? (
         <Card className="text-center py-16">
-          <Alert variant="info">
-            Nenhum usuário carregado. Integre este painel com um endpoint administrativo no backend
-            para listar todos os usuários do sistema.
-          </Alert>
+          <Alert variant="info">Nenhum usuário encontrado.</Alert>
         </Card>
       ) : (
         <Card padding={false}>
@@ -121,12 +155,21 @@ const AdminUsers = () => {
                           <MoreVertical className="h-4 w-4" />
                         </button>
                         {actionMenu === user.user_id && (
-                          <div className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border py-1 z-10 animate-fade-in">
-                            <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2">
-                              <Shield className="h-4 w-4" /> Alterar Papel
-                            </button>
-                            <button className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2">
-                              <UserX className="h-4 w-4" /> Desativar
+                          <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border py-1 z-10 animate-fade-in">
+                            {ROLES.filter((r) => r !== user.role).map((role) => (
+                              <button
+                                key={role}
+                                onClick={() => handleSetRole(user.user_id, role)}
+                                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+                              >
+                                <Shield className="h-4 w-4" /> Tornar {roleLabels[role]}
+                              </button>
+                            ))}
+                            <button
+                              onClick={() => handleToggleActive(user.user_id, user.active)}
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
+                            >
+                              <UserX className="h-4 w-4" /> {user.active ? 'Desativar' : 'Ativar'}
                             </button>
                           </div>
                         )}

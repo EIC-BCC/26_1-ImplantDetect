@@ -1,14 +1,15 @@
-import hmac
-import hashlib
 from jose import jwt
 from typing import Optional, TypedDict
 from jose.exceptions import JWTError
+from passlib.context import CryptContext
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, timezone
 
 from core.logging import get_logger
 from core.configuration import settings
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 logger = get_logger(__name__)
 
@@ -18,6 +19,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/login")
 class JWTPayload(TypedDict):
     sub: str
     exp: int
+    role: str
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -38,12 +40,11 @@ def verify_access_token(token: str) -> Optional[JWTPayload]:
 
 
 def hash_password(password: str) -> str:
-    salted = (password + settings.SECRET_KEY).encode()
-    return hashlib.sha256(salted).hexdigest()
+    return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return hmac.compare_digest(hash_password(plain_password), hashed_password)
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_current_user(token: str = Depends(oauth2_scheme)) -> JWTPayload:

@@ -1,13 +1,12 @@
 import { useEffect, useState, useRef, Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Eye, EyeOff, ChevronDown, ChevronUp, ArrowLeft, Download } from 'lucide-react';
+import { Eye, EyeOff, ChevronDown, ChevronUp, ArrowLeft, Clock, Loader2, XCircle } from 'lucide-react';
 
 import ImageService from '../../state/services/imageService';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import Alert from '../../components/ui/Alert';
 import Badge from '../../components/ui/Badge';
 import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
 
 const COLORS = [
   { stroke: '#22c55e', bg: 'bg-green-500', label: 'green' },
@@ -17,6 +16,9 @@ const COLORS = [
   { stroke: '#a855f7', bg: 'bg-purple-500', label: 'purple' },
   { stroke: '#06b6d4', bg: 'bg-cyan-500', label: 'teal' },
 ];
+
+const POLLING_INTERVAL_MS = 3000;
+const TERMINAL_STATUSES = ['Concluído', 'Falhou', 'Cancelado'];
 
 const getColor = (index) => COLORS[index % COLORS.length];
 
@@ -30,6 +32,7 @@ const isValidResult = (result) => {
 const ImageResults = () => {
   const { process_id } = useParams();
   const [results, setResults] = useState([]);
+  const [processStatus, setProcessStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedRow, setExpandedRow] = useState(null);
@@ -37,24 +40,73 @@ const ImageResults = () => {
   const [hoveredBox, setHoveredBox] = useState(null);
   const [visibleBoxes, setVisibleBoxes] = useState(new Set());
   const imageRef = useRef(null);
+  const pollingRef = useRef(null);
+
+  const isTerminal = (statusName) => TERMINAL_STATUSES.includes(statusName);
+
+  const fetchProcess = async () => {
+    try {
+      const proc = await ImageService.getProcess(process_id);
+      setProcessStatus(proc?.status_name ?? null);
+      return proc?.status_name ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  const fetchResults = async () => {
+    try {
+      const data = await ImageService.getProcessResults(process_id);
+      setResults(data);
+      if (data?.length > 0 && data[0].image_url) {
+        const blobUrl = await ImageService.getImageBlob(data[0].image_url);
+        setImageUrl(blobUrl);
+      }
+    } catch (err) {
+      setError('Erro ao buscar resultados: ' + (err.message || 'Erro desconhecido'));
+    }
+  };
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  };
 
   useEffect(() => {
-    const fetchResults = async () => {
+    const init = async () => {
       setLoading(true);
       setError('');
-      try {
-        const data = await ImageService.getProcessResults(process_id);
-        setResults(data);
-        if (data?.length > 0 && data[0].image_url) {
-          setImageUrl(`/api/uploads/${data[0].image_url}`);
-        }
-      } catch (err) {
-        setError('Erro ao buscar resultados: ' + (err.message || 'Erro desconhecido'));
-      } finally {
+
+      const statusName = await fetchProcess();
+
+      if (statusName && isTerminal(statusName)) {
+        await fetchResults();
         setLoading(false);
+        return;
       }
+
+      setLoading(false);
+
+      // Start polling while pending/running
+      pollingRef.current = setInterval(async () => {
+        const newStatus = await fetchProcess();
+        if (newStatus && isTerminal(newStatus)) {
+          stopPolling();
+          await fetchResults();
+        }
+      }, POLLING_INTERVAL_MS);
     };
-    fetchResults();
+
+    init();
+    return () => {
+      stopPolling();
+      setImageUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
   }, [process_id]);
 
   useEffect(() => {
@@ -78,7 +130,7 @@ const ImageResults = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <LoadingSpinner size="lg" />
-          <p className="text-gray-500 mt-4">Carregando resultados...</p>
+          <p className="text-gray-500 mt-4">Carregando...</p>
         </div>
       </div>
     );
@@ -92,6 +144,78 @@ const ImageResults = () => {
     );
   }
 
+  // Process is still pending or running — show waiting screen
+  if (processStatus && !isTerminal(processStatus)) {
+    const isPending = processStatus === 'Pendente';
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+        <div className="mb-6">
+          <Link to="/images/history" className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 mb-2 transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Voltar ao histórico
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">Resultados da Análise</h1>
+          <p className="text-gray-500 mt-1">Processo #{process_id}</p>
+        </div>
+
+        <Card className="text-center py-16">
+          <div className="flex flex-col items-center gap-4">
+            {isPending ? (
+              <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center">
+                <Clock className="h-8 w-8 text-amber-500" />
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+              </div>
+            )}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {isPending ? 'Análise na fila' : 'Análise em andamento'}
+              </h3>
+              <p className="text-gray-500 mt-1 text-sm">
+                {isPending
+                  ? 'Sua imagem está aguardando processamento.'
+                  : 'Sua imagem está sendo analisada pela IA.'}
+              </p>
+              <p className="text-gray-400 mt-3 text-xs">
+                Esta página atualiza automaticamente a cada {POLLING_INTERVAL_MS / 1000} segundos...
+              </p>
+            </div>
+            <Badge color={isPending ? 'amber' : 'blue'} dot>{processStatus}</Badge>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Process failed or canceled
+  if (processStatus === 'Falhou' || processStatus === 'Cancelado') {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
+        <div className="mb-6">
+          <Link to="/images/history" className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 mb-2 transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Voltar ao histórico
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">Resultados da Análise</h1>
+          <p className="text-gray-500 mt-1">Processo #{process_id}</p>
+        </div>
+        <Card className="text-center py-16">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <XCircle className="h-8 w-8 text-red-500" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {processStatus === 'Falhou' ? 'Análise falhou' : 'Análise cancelada'}
+          </h3>
+          <p className="text-gray-500 text-sm">
+            {processStatus === 'Falhou'
+              ? 'Ocorreu um erro durante o processamento da imagem.'
+              : 'Este processo foi cancelado.'}
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
   const validResults = results.filter(isValidResult);
   const hasNoDetections = results.length > 0 && validResults.length === 0;
   const errorMessage = results.find((r) => r.message)?.message;
@@ -100,7 +224,7 @@ const ImageResults = () => {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link to="/history" className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 mb-2 transition-colors">
+          <Link to="/images/history" className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary-600 mb-2 transition-colors">
             <ArrowLeft className="h-4 w-4" /> Voltar ao histórico
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">
@@ -214,7 +338,7 @@ const ImageResults = () => {
                       <div className="flex items-center gap-3 p-3">
                         <button
                           onClick={() => toggleBoxVisibility(idx)}
-                          className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                          className="shrink-0 text-gray-400 hover:text-gray-600"
                           title={visibleBoxes.has(idx) ? 'Ocultar' : 'Mostrar'}
                         >
                           {visibleBoxes.has(idx) ? (
@@ -224,7 +348,7 @@ const ImageResults = () => {
                           )}
                         </button>
 
-                        <div className={`w-3 h-3 rounded-full flex-shrink-0 ${color.bg}`} />
+                        <div className={`w-3 h-3 rounded-full shrink-0 ${color.bg}`} />
 
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">
@@ -235,7 +359,7 @@ const ImageResults = () => {
                           </p>
                         </div>
 
-                        <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
+                        <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden shrink-0">
                           <div
                             className="h-full rounded-full"
                             style={{
@@ -247,7 +371,7 @@ const ImageResults = () => {
 
                         <button
                           onClick={() => toggleRow(idx)}
-                          className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                          className="text-gray-400 hover:text-gray-600 shrink-0"
                         >
                           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </button>

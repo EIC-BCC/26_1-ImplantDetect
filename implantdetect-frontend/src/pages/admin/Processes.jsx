@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Eye, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Search, Eye } from 'lucide-react';
 
+import adminService from '../../state/services/adminService';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
@@ -18,13 +19,23 @@ const statusConfig = {
 
 const AdminProcesses = () => {
   const [processes, setProcesses] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
 
-  // Placeholder — integrar com endpoint admin futuramente
   useEffect(() => {
-    setProcesses([]);
-    setLoading(false);
+    const fetchProcesses = async () => {
+      setLoading(true);
+      try {
+        const data = await adminService.getProcesses();
+        setProcesses(data);
+      } catch (err) {
+        setError(err?.detail || err?.message || 'Erro ao carregar processos.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProcesses();
   }, []);
 
   const formatDate = (dateStr) => {
@@ -67,12 +78,11 @@ const AdminProcesses = () => {
         </div>
       </div>
 
-      {processes.length === 0 ? (
+      {error && <Alert variant="error" className="mb-2">{error}</Alert>}
+
+      {processes.length === 0 && !error ? (
         <Card className="text-center py-16">
-          <Alert variant="info">
-            Nenhum processo carregado. Integre este painel com um endpoint administrativo no
-            backend para listar todos os processos do sistema.
-          </Alert>
+          <Alert variant="info">Nenhum processo encontrado.</Alert>
         </Card>
       ) : (
         <Card padding={false}>
@@ -89,7 +99,7 @@ const AdminProcesses = () => {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((process) => {
-                  const config = statusConfig[process.status_name] || { color: 'gray' };
+                  const config = statusConfig[process.status_name] ?? { color: 'gray' };
                   return (
                     <tr key={process.process_id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4 font-medium text-gray-900">#{process.process_id}</td>

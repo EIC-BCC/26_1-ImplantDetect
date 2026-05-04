@@ -4,10 +4,10 @@ from fastapi import UploadFile, HTTPException, status
 from PIL import Image as PILImage, UnidentifiedImageError
 
 from core.logging import get_logger
-from daos.image_dao import ImageDAO
-from models.entities.image import Image
 from core.configuration import settings
-from models.dtos.image_dto import ImageResponse
+from implantdetect_shared.daos.image_dao import ImageDAO
+from implantdetect_shared.entities.image import Image
+from implantdetect_shared.models.dtos.image_dto import ImageResponse
 from services.process_service import ProcessService
 
 logger = get_logger(__name__)
@@ -16,34 +16,22 @@ logger = get_logger(__name__)
 class ImageService:
     def __init__(self, db: AsyncSession):
         self._init_configurations()
-        self.image_dao = ImageDAO(db)
+        self.image_dao = ImageDAO(db, settings.IMAGE_REPOSITORY)
         self.process_service = ProcessService(db)
 
     def _handle_image_not_found(self):
-        """
-        Lida com o caso de imagem não encontrada.
-        """
-
         logger.error("Imagem não encontrada.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Imagem não encontrada."
         )
 
     def _init_configurations(self) -> None:
-        """
-        Inicializa as configurações do serviço.
-        """
-
         self.image_maximum_size = settings.IMAGE_MAXIMUM_SIZE
         self.image_supported_formats = [
             f.lower() for f in settings.IMAGE_SUPPORTED_FORMATS
         ]
 
     def _check_size(self, size: int) -> bool:
-        """
-        Valida o tamanho da imagem.
-        """
-
         if size > self.image_maximum_size:
             size_mb = size / (1024 * 1024)
             max_size_mb = self.image_maximum_size / (1024 * 1024)
@@ -55,10 +43,6 @@ class ImageService:
         return True
 
     def _check_format(self, format: str) -> bool:
-        """
-        Valida o formato da imagem.
-        """
-
         if format.lower() not in self.image_supported_formats:
             logger.warning(f"Formato de imagem não suportado: {format}")
             raise HTTPException(
@@ -68,10 +52,6 @@ class ImageService:
         return True
 
     async def _validate_image(self, image: UploadFile) -> bool:
-        """
-        Valida o tamanho e formato da imagem enviada.
-        """
-
         try:
             contents = await image.read()
             self._check_size(len(contents))
@@ -112,14 +92,6 @@ class ImageService:
     async def handle_image_upload(
         self, image: UploadFile, user_id: int
     ) -> tuple[int, int]:
-        """
-        Processa o upload de uma imagem.
-        1. Valida a extensão e tamanho
-        2. Salva o arquivo no disco (se não existir)
-        3. Cria um registro no banco de dados (se não existir)
-        4. Adiciona à fila de processamento
-        """
-
         try:
             await self._validate_image(image)
 
@@ -155,10 +127,6 @@ class ImageService:
             )
 
     async def get_image_by_id(self, image_id: int) -> ImageResponse | None:
-        """
-        Busca uma imagem pelo ID.
-        """
-
         image = await self.image_dao.get_image_by_id(image_id)
 
         if not image:
@@ -168,14 +136,7 @@ class ImageService:
         return image
 
     async def get_all_images_from_user(self, user_id: int) -> list[ImageResponse]:
-        """
-        Busca todas as imagens de um usuário pelo ID.
-        """
-
         images = await self.image_dao.get_all_images_from_user(user_id)
-
-        if not images:
-            self._handle_image_not_found()
 
         logger.info(
             f"{len(images)} imagens encontradas para o usuário com ID {user_id}."

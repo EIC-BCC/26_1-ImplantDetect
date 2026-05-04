@@ -4,18 +4,14 @@ from fastapi import UploadFile, HTTPException, status
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.logging import get_logger
-from core.configuration import settings
-from models.entities.image import Image
-from enums.general_status import GeneralStatus
-
-logger = get_logger(__name__)
+from implantdetect_shared.entities.image import Image
+from implantdetect_shared.enums.general_status import GeneralStatus
 
 
 class ImageDAO:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, image_repository: str):
         self.db = db
-        self.image_repository = settings.IMAGE_REPOSITORY
+        self.image_repository = image_repository
 
     def _get_image_hash(self, image: UploadFile) -> str:
         hasher = hashlib.sha256()
@@ -34,7 +30,6 @@ class ImageDAO:
 
             existing_image = await self.get_image_by_hash(file_hash, file_extension)
             if existing_image:
-                logger.info("Imagem já existe no banco de dados.")
                 return str(existing_image.file_hash), str(existing_image.file_extension)
 
             folder = Path(self.image_repository)
@@ -43,11 +38,9 @@ class ImageDAO:
             with open(image_path, "wb") as f:
                 f.write(contents)
 
-            logger.info(f"Imagem salva como: {str(image_path)}")
             return file_hash, file_extension
 
         except Exception as e:
-            logger.error(f"Erro ao salvar a imagem: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Erro ao salvar a imagem: {str(e)}",
@@ -61,7 +54,6 @@ class ImageDAO:
             return image
 
         except Exception as e:
-            logger.error(f"Erro ao adicionar imagem ao banco de dados: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Erro ao adicionar imagem ao banco de dados: {str(e)}",

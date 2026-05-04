@@ -32,5 +32,10 @@ const getProcess = async (processId) => {
   return response.data.data?.process;
 };
 
-const imageService = { upload, get, getUserImages, getProcessResults, getUserProcesses, getProcess };
+const getImageBlob = async (filename) => {
+  const response = await api.get(`/uploads/${filename}`, { responseType: 'blob' });
+  return URL.createObjectURL(response.data);
+};
+
+const imageService = { upload, get, getUserImages, getProcessResults, getUserProcesses, getProcess, getImageBlob };
 export default imageService;

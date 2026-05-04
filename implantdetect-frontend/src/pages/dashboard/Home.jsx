@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Upload, History, BarChart3, ArrowRight } from 'lucide-react';
+import { Upload, History, ArrowRight } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import Card from '../../components/ui/Card';
 
@@ -15,15 +15,8 @@ const quickActions = [
     icon: History,
     title: 'Histórico',
     description: 'Veja todas as suas análises anteriores.',
-    to: '/history',
+    to: '/images/history',
     color: 'bg-accent-50 text-accent-600',
-  },
-  {
-    icon: BarChart3,
-    title: 'Última Análise',
-    description: 'Confira os resultados da última imagem processada.',
-    to: '/history',
-    color: 'bg-purple-50 text-purple-600',
   },
 ];
 
@@ -41,7 +34,7 @@ const Home = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {quickActions.map((action, index) => (
           <Link key={index} to={action.to}>
             <Card hover className="h-full group">
@@ -58,24 +51,6 @@ const Home = () => {
             </Card>
           </Link>
         ))}
-      </div>
-
-      <div className="bg-linear-to-r from-primary-600 to-accent-600 rounded-2xl p-8 text-white">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Detecção com YOLOv11</h2>
-            <p className="text-white/80 max-w-lg">
-              Nossa plataforma utiliza o modelo YOLOv11 treinado especificamente para detectar
-              e classificar diferentes tipos de implantes dentários em radiografias panorâmicas.
-            </p>
-          </div>
-          <Link to="/images/upload">
-            <button className="bg-white text-primary-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-lg flex items-center gap-2 whitespace-nowrap">
-              <Upload className="h-5 w-5" />
-              Analisar Imagem
-            </button>
-          </Link>
-        </div>
       </div>
     </div>
   );

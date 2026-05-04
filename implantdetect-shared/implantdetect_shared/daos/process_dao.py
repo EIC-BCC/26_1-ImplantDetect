@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from models.entities.process import Process
-from models.entities.process_results import ProcessResults
+
+from implantdetect_shared.entities.process import Process
+from implantdetect_shared.entities.process_results import ProcessResults
 
 
 class ProcessDao:
@@ -30,6 +31,10 @@ class ProcessDao:
             return process
         return None
 
+    async def get_all_processes(self) -> list[Process]:
+        result = await self.db.execute(select(Process))
+        return list(result.scalars().all())
+
     async def get_all_processes_by_user(self, user_id: int) -> list[Process]:
         result = await self.db.execute(
             select(Process).filter(Process.user_id == user_id)
@@ -41,3 +46,11 @@ class ProcessDao:
             select(ProcessResults).filter(ProcessResults.process_id == process_id)
         )
         return list(result.scalars().all())
+
+    async def add_process_result(
+        self, process_result: ProcessResults
+    ) -> ProcessResults:
+        self.db.add(process_result)
+        await self.db.commit()
+        await self.db.refresh(process_result)
+        return process_result

@@ -1,12 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Activity, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, Activity, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 const adminLinks = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/admin/users', icon: Users, label: 'Usuários' },
   { to: '/admin/processes', icon: Activity, label: 'Processos' },
-  { to: '/admin/settings', icon: Settings, label: 'Configurações' },
 ];
 
 const AdminSidebar = () => {

@@ -1,7 +1,8 @@
 from sqlalchemy import Integer, String, DateTime
-from models.entities.base import Base
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column
+
+from implantdetect_shared.entities.base import Base
 
 
 class Image(Base):

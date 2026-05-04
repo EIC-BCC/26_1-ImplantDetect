@@ -5,33 +5,33 @@ import Button from '../components/ui/Button';
 const features = [
   {
     icon: Upload,
-    title: 'Upload Simples',
-    description: 'Envie imagens de Raio X panorâmico diretamente pela plataforma. Suportamos formatos JPG, JPEG e PNG.',
+    title: 'Upload em segundos',
+    description: 'Arraste e solte radiografias panorâmicas (JPG, JPEG ou PNG) e inicie a análise sem configuração técnica.',
   },
   {
     icon: Cpu,
-    title: 'IA Avançada',
-    description: 'Utilizamos YOLOv11, um modelo de aprendizado de máquina treinado especificamente para detectar implantes dentários.',
+    title: 'Modelo treinado para implantodontia',
+    description: 'A detecção é feita com YOLOv11 ajustado para reconhecer implantes dentários em exames panorâmicos reais.',
   },
   {
     icon: Search,
-    title: 'Detecção Precisa',
-    description: 'Visualize as detecções com bounding boxes diretamente sobre o Raio X, com indicadores de confiança.',
+    title: 'Detecção visual imediata',
+    description: 'Veja bounding boxes sobre o Raio X com nível de confiança por implante, facilitando a validação clínica.',
   },
   {
     icon: BarChart3,
-    title: 'Resultados Detalhados',
-    description: 'Analise cada implante detectado com informações de classe, confiança e coordenadas precisas.',
+    title: 'Relatório técnico por detecção',
+    description: 'Cada resultado inclui classe prevista, score de confiança e coordenadas para rastreabilidade da análise.',
   },
   {
     icon: ShieldCheck,
-    title: 'Seguro e Privado',
-    description: 'Seus dados e imagens são armazenados de forma segura com autenticação e controle de acesso.',
+    title: 'Proteção de dados clínicos',
+    description: 'Imagens e informações ficam protegidas por autenticação e controle de acesso por perfil de usuário.',
   },
   {
     icon: Users,
-    title: 'Multi-Perfil',
-    description: 'Plataforma acessível para pacientes, especialistas em odontologia e administradores do sistema.',
+    title: 'Fluxo para cada perfil',
+    description: 'Pacientes, especialistas e administradores utilizam a mesma plataforma com permissões adequadas a cada função.',
   },
 ];
 
@@ -47,10 +47,6 @@ const Landing = () => {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium mb-6">
-              <span className="w-2 h-2 bg-accent-400 rounded-full animate-pulse" />
-              Powered by YOLOv11
-            </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
               Detecção de Implantes Dentários com{' '}
@@ -113,49 +109,6 @@ const Landing = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Steps Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">
-              Simples e rápido
-            </h2>
-            <p className="text-lg text-gray-600">Três passos para obter seu resultado</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                step: '01',
-                title: 'Faça o Upload',
-                description: 'Envie a imagem do Raio X panorâmico pela plataforma.',
-              },
-              {
-                step: '02',
-                title: 'Processamento IA',
-                description: 'O modelo YOLOv11 analisa a imagem e identifica os implantes.',
-              },
-              {
-                step: '03',
-                title: 'Visualize os Resultados',
-                description: 'Veja as detecções com bounding boxes e informações detalhadas.',
-              },
-            ].map((item, index) => (
-              <div key={index} className="relative text-center">
-                <div className="text-6xl font-extrabold text-primary-100 mb-4">{item.step}</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.description}</p>
-                {index < 2 && (
-                  <div className="hidden md:block absolute top-8 -right-4 text-primary-200">
-                    <ArrowRight className="h-8 w-8" />
-                  </div>
-                )}
               </div>
             ))}
           </div>

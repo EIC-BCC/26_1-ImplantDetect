@@ -1,17 +1,17 @@
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Upload as UploadIcon, FileImage, X, AlertCircle } from 'lucide-react';
+import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { Upload as UploadIcon, FileImage, X, AlertCircle } from "lucide-react";
 
-import ImageService from '../../state/services/imageService';
-import { imageFormSchema } from '../../utils/imageFormValidation';
-import Button from '../../components/ui/Button';
-import Alert from '../../components/ui/Alert';
-import Card from '../../components/ui/Card';
+import ImageService from "../../state/services/imageService";
+import { imageFormSchema } from "../../utils/imageFormValidation";
+import Button from "../../components/ui/Button";
+import Alert from "../../components/ui/Alert";
+import Card from "../../components/ui/Card";
 
 const Upload = () => {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
@@ -20,9 +20,9 @@ const Upload = () => {
   const handleFile = (selectedFile) => {
     if (!selectedFile) return;
     setFile(selectedFile);
-    setError('');
+    setError("");
 
-    if (selectedFile.type.startsWith('image/')) {
+    if (selectedFile.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(selectedFile);
@@ -38,41 +38,46 @@ const Upload = () => {
     handleFile(droppedFile);
   };
 
-  const handleDragOver = (e) => { e.preventDefault(); setDragOver(true); };
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
   const handleDragLeave = () => setDragOver(false);
 
   const removeFile = () => {
     setFile(null);
     setPreview(null);
-    setError('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    setError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await imageFormSchema.validate({ file }, { abortEarly: false });
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append("image", file);
       const response = await ImageService.upload(formData);
 
       if (response?.process_id) {
         navigate(`/process/${response.process_id}/results`);
       } else {
-        setError('Processo criado, mas não foi possível obter o ID.');
+        setError("Processo criado, mas não foi possível obter o ID.");
       }
     } catch (err) {
       if (err?.inner) {
-        setError(err.inner.map((e) => e.message).join('. '));
+        setError(err.inner.map((e) => e.message).join(". "));
+      } else if (err?.message) {
+        setError(err.message);
       } else if (err?.detail) {
         setError(err.detail);
-      } else if (typeof err === 'string') {
+      } else if (typeof err === "string") {
         setError(err);
       } else {
-        setError('Erro inesperado ao enviar imagem.');
+        setError("Erro inesperado ao enviar imagem.");
         console.error(err);
       }
     } finally {
@@ -85,7 +90,8 @@ const Upload = () => {
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Upload de Raio X</h1>
         <p className="text-gray-500 mt-2">
-          Envie uma imagem de radiografia panorâmica para análise por inteligência artificial.
+          Envie uma imagem de radiografia panorâmica para análise por
+          inteligência artificial.
         </p>
       </div>
 
@@ -98,11 +104,12 @@ const Upload = () => {
             onClick={() => fileInputRef.current?.click()}
             className={`
               relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300
-              ${dragOver
-                ? 'border-primary-500 bg-primary-50'
-                : file
-                  ? 'border-green-300 bg-green-50'
-                  : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+              ${
+                dragOver
+                  ? "border-primary-500 bg-primary-50"
+                  : file
+                    ? "border-green-300 bg-green-50"
+                    : "border-gray-300 hover:border-primary-400 hover:bg-gray-50"
               }
             `}
           >
@@ -125,7 +132,10 @@ const Upload = () => {
                     />
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); removeFile(); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile();
+                      }}
                       className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-md"
                     >
                       <X className="h-4 w-4" />
@@ -177,7 +187,7 @@ const Upload = () => {
               disabled={!file}
               icon={UploadIcon}
             >
-              {loading ? 'Processando...' : 'Enviar para Análise'}
+              {loading ? "Processando..." : "Enviar para Análise"}
             </Button>
           </div>
         </form>

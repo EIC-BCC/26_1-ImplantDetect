@@ -1,27 +1,27 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Eye } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Search, Eye } from "lucide-react";
 
-import adminService from '../../state/services/adminService';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Input from '../../components/ui/Input';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import Alert from '../../components/ui/Alert';
+import adminService from "../../state/services/adminService";
+import Card from "../../components/ui/Card";
+import Badge from "../../components/ui/Badge";
+import Input from "../../components/ui/Input";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import Alert from "../../components/ui/Alert";
 
 const statusConfig = {
-  Pendente: { color: 'amber' },
-  Executando: { color: 'blue' },
-  'Concluído': { color: 'green' },
-  Falhou: { color: 'red' },
-  Cancelado: { color: 'gray' },
+  Pendente: { color: "amber" },
+  Executando: { color: "blue" },
+  Concluído: { color: "green" },
+  Falhou: { color: "red" },
+  Cancelado: { color: "gray" },
 };
 
 const AdminProcesses = () => {
   const [processes, setProcesses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchProcesses = async () => {
@@ -30,7 +30,7 @@ const AdminProcesses = () => {
         const data = await adminService.getProcesses();
         setProcesses(data);
       } catch (err) {
-        setError(err?.detail || err?.message || 'Erro ao carregar processos.');
+        setError(err?.detail || err?.message || "Erro ao carregar processos.");
       } finally {
         setLoading(false);
       }
@@ -40,17 +40,22 @@ const AdminProcesses = () => {
 
   const formatDate = (dateStr) => {
     try {
-      return new Date(dateStr).toLocaleDateString('pt-BR', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit',
+      return new Date(dateStr).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
-    } catch { return dateStr; }
+    } catch {
+      return dateStr;
+    }
   };
 
   const filtered = processes.filter(
     (p) =>
       String(p.process_id).includes(search) ||
-      p.status_name?.toLowerCase().includes(search.toLowerCase())
+      p.status_name?.toLowerCase().includes(search.toLowerCase()),
   );
 
   if (loading) {
@@ -65,8 +70,12 @@ const AdminProcesses = () => {
     <div className="animate-fade-in space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gerenciar Processos</h1>
-          <p className="text-gray-500 mt-1">Acompanhe todos os processos de análise do sistema</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Gerenciar Processos
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Acompanhe todos os processos de análise do sistema
+          </p>
         </div>
         <div className="w-full sm:w-72">
           <Input
@@ -78,7 +87,11 @@ const AdminProcesses = () => {
         </div>
       </div>
 
-      {error && <Alert variant="error" className="mb-2">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-2">
+          {error}
+        </Alert>
+      )}
 
       {processes.length === 0 && !error ? (
         <Card className="text-center py-16">
@@ -90,24 +103,47 @@ const AdminProcesses = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Usuário</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Data</th>
-                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Ações</th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Usuário
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Data
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((process) => {
-                  const config = statusConfig[process.status_name] ?? { color: 'gray' };
+                  const config = statusConfig[process.status_name] ?? {
+                    color: "gray",
+                  };
                   return (
-                    <tr key={process.process_id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-gray-900">#{process.process_id}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">Usuário #{process.user_id}</td>
-                      <td className="px-6 py-4">
-                        <Badge color={config.color} dot>{process.status_name}</Badge>
+                    <tr
+                      key={process.process_id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        #{process.process_id}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{formatDate(process.created_at)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        Usuário #{process.user_id}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge color={config.color} dot>
+                          {process.status_name}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {formatDate(process.created_at)}
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <Link
                           to={`/process/${process.process_id}/results`}

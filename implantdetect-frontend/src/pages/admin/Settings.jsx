@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Save, Server, Shield, Image, Brain } from 'lucide-react';
+import { useState } from "react";
+import { Save, Server, Shield, Image, Brain } from "lucide-react";
 
-import Card from '../../components/ui/Card';
-import Input from '../../components/ui/Input';
-import Button from '../../components/ui/Button';
-import Alert from '../../components/ui/Alert';
+import Card from "../../components/ui/Card";
+import Input from "../../components/ui/Input";
+import Button from "../../components/ui/Button";
+import Alert from "../../components/ui/Alert";
 
 const AdminSettings = () => {
   const [saved, setSaved] = useState(false);
@@ -18,8 +18,12 @@ const AdminSettings = () => {
   return (
     <div className="animate-fade-in space-y-8 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Configurações do Sistema</h1>
-        <p className="text-gray-500 mt-1">Gerencie as configurações gerais da plataforma</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Configurações do Sistema
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Gerencie as configurações gerais da plataforma
+        </p>
       </div>
 
       {saved && (
@@ -34,7 +38,9 @@ const AdminSettings = () => {
           </div>
           <div>
             <Card.Title>Geral</Card.Title>
-            <Card.Description>Configurações gerais do servidor</Card.Description>
+            <Card.Description>
+              Configurações gerais do servidor
+            </Card.Description>
           </div>
         </div>
         <form onSubmit={handleSave} className="space-y-4">
@@ -51,7 +57,9 @@ const AdminSettings = () => {
             disabled
           />
           <div className="pt-2">
-            <Button type="submit" icon={Save} size="md">Salvar</Button>
+            <Button type="submit" icon={Save} size="md">
+              Salvar
+            </Button>
           </div>
         </form>
       </Card>
@@ -64,7 +72,9 @@ const AdminSettings = () => {
           </div>
           <div>
             <Card.Title>Segurança</Card.Title>
-            <Card.Description>Configurações de autenticação e segurança</Card.Description>
+            <Card.Description>
+              Configurações de autenticação e segurança
+            </Card.Description>
           </div>
         </div>
         <form onSubmit={handleSave} className="space-y-4">
@@ -73,13 +83,11 @@ const AdminSettings = () => {
             type="number"
             defaultValue="30"
           />
-          <Input
-            label="Algoritmo de hash"
-            defaultValue="HS256"
-            disabled
-          />
+          <Input label="Algoritmo de hash" defaultValue="HS256" disabled />
           <div className="pt-2">
-            <Button type="submit" icon={Save} size="md">Salvar</Button>
+            <Button type="submit" icon={Save} size="md">
+              Salvar
+            </Button>
           </div>
         </form>
       </Card>
@@ -96,18 +104,16 @@ const AdminSettings = () => {
           </div>
         </div>
         <form onSubmit={handleSave} className="space-y-4">
-          <Input
-            label="Tamanho máximo (MB)"
-            type="number"
-            defaultValue="50"
-          />
+          <Input label="Tamanho máximo (MB)" type="number" defaultValue="50" />
           <Input
             label="Formatos suportados"
             defaultValue="JPG, JPEG, PNG"
             disabled
           />
           <div className="pt-2">
-            <Button type="submit" icon={Save} size="md">Salvar</Button>
+            <Button type="submit" icon={Save} size="md">
+              Salvar
+            </Button>
           </div>
         </form>
       </Card>
@@ -136,7 +142,9 @@ const AdminSettings = () => {
             defaultValue="0.10"
           />
           <div className="pt-2">
-            <Button type="submit" icon={Save} size="md">Salvar</Button>
+            <Button type="submit" icon={Save} size="md">
+              Salvar
+            </Button>
           </div>
         </form>
       </Card>

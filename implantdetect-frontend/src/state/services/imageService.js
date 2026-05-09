@@ -1,8 +1,8 @@
-import api from './api';
+import api from "./api";
 
 const upload = async (formData) => {
-  const response = await api.post('/images/submit', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+  const response = await api.post("/images/submit", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
   return response.data.data;
 };
@@ -13,7 +13,7 @@ const get = async (id) => {
 };
 
 const getUserImages = async () => {
-  const response = await api.get('/images/user');
+  const response = await api.get("/images/user");
   return response.data.data?.images || [];
 };
 
@@ -23,7 +23,7 @@ const getProcessResults = async (processId) => {
 };
 
 const getUserProcesses = async () => {
-  const response = await api.get('/processing/user/processes');
+  const response = await api.get("/processing/user/processes");
   return response.data.data?.processes || [];
 };
 
@@ -33,9 +33,19 @@ const getProcess = async (processId) => {
 };
 
 const getImageBlob = async (filename) => {
-  const response = await api.get(`/uploads/${filename}`, { responseType: 'blob' });
+  const response = await api.get(`/uploads/${filename}`, {
+    responseType: "blob",
+  });
   return URL.createObjectURL(response.data);
 };
 
-const imageService = { upload, get, getUserImages, getProcessResults, getUserProcesses, getProcess, getImageBlob };
+const imageService = {
+  upload,
+  get,
+  getUserImages,
+  getProcessResults,
+  getUserProcesses,
+  getProcess,
+  getImageBlob,
+};
 export default imageService;

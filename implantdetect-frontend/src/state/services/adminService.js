@@ -1,7 +1,7 @@
-import api from './api';
+import api from "./api";
 
 const getUsers = async () => {
-  const response = await api.get('/admin/users');
+  const response = await api.get("/admin/users");
   return response.data.data?.users || [];
 };
 
@@ -16,7 +16,7 @@ const setUserActive = async (userId, active) => {
 };
 
 const getProcesses = async () => {
-  const response = await api.get('/admin/processes');
+  const response = await api.get("/admin/processes");
   return response.data.data?.processes || [];
 };
 

@@ -13,8 +13,10 @@ class UserDao:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_all_users(self) -> list[User]:
-        result = await self.db.execute(select(User))
+    async def get_all_users(self, limit: int = 50, offset: int = 0) -> list[User]:
+        result = await self.db.execute(
+            select(User).order_by(User.id).limit(limit).offset(offset)
+        )
         return list(result.scalars().all())
 
     async def get_user_by_id(self, user_id: int) -> User | None:
@@ -27,7 +29,7 @@ class UserDao:
         user_data["hashed_password"] = hashed_password
         user_entity = User(**user_data)
         self.db.add(user_entity)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(user_entity)
         return user_entity
 
@@ -44,7 +46,7 @@ class UserDao:
         if updated_user_data.password is not None:
             user.hashed_password = hash_password_fn(updated_user_data.password)
         self.db.add(user)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(user)
         return user
 

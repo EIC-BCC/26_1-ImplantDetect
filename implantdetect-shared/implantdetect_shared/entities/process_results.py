@@ -1,15 +1,21 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import Integer, DateTime, String, Float
+from sqlalchemy import Integer, DateTime, String, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from implantdetect_shared.entities.base import Base
 
 
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
 class ProcessResults(Base):
     __tablename__ = "process_results"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    process_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    process_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("process.id"), nullable=False, index=True
+    )
     class_id: Mapped[int] = mapped_column(Integer, nullable=True)
     confidence: Mapped[float] = mapped_column(Float, nullable=True)
     bb_x1_center: Mapped[float] = mapped_column(Float, nullable=True)
@@ -20,5 +26,7 @@ class ProcessResults(Base):
     bb_y3_center: Mapped[float] = mapped_column(Float, nullable=True)
     bb_x4_center: Mapped[float] = mapped_column(Float, nullable=True)
     bb_y4_center: Mapped[float] = mapped_column(Float, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow
+    )
     message: Mapped[Optional[str]] = mapped_column(String, nullable=True)

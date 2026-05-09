@@ -1,41 +1,51 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 
 // Layout
-import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
-import AdminSidebar from './components/layout/AdminSidebar';
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
+import AdminSidebar from "./components/layout/AdminSidebar";
 
 // Auth guards
-import { ProtectedRoute, AdminRoute, GuestRoute } from './components/auth/ProtectedRoute';
+import {
+  ProtectedRoute,
+  AdminRoute,
+  GuestRoute,
+} from "./components/auth/ProtectedRoute";
 
 // Pages – Landing
-import Landing from './pages/Landing';
+import Landing from "./pages/Landing";
 
 // Pages – Auth
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import Logout from './pages/auth/Logout';
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Logout from "./pages/auth/Logout";
 
 // Pages – Dashboard
-import Home from './pages/dashboard/Home';
+import Home from "./pages/dashboard/Home";
 
 // Pages – Profile
-import Profile from './pages/profile/Profile';
+import Profile from "./pages/profile/Profile";
 
 // Pages – Images
-import Upload from './pages/images/Upload';
-import Results from './pages/images/Results';
-import History from './pages/images/History';
+import Upload from "./pages/images/Upload";
+import Results from "./pages/images/Results";
+import History from "./pages/images/History";
 
 // Pages – Admin
-import AdminDashboard from './pages/admin/Dashboard';
-import AdminUsers from './pages/admin/Users';
-import AdminProcesses from './pages/admin/Processes';
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminUsers from "./pages/admin/Users";
+import AdminProcesses from "./pages/admin/Processes";
 
 // Pages – Errors
-import NotFound from './pages/errors/NotFound';
-import ServerError from './pages/errors/ServerError';
-import Unauthorized from './pages/errors/Unauthorized';
+import NotFound from "./pages/errors/NotFound";
+import ServerError from "./pages/errors/ServerError";
+import Unauthorized from "./pages/errors/Unauthorized";
 
 const MainLayout = () => (
   <div className="flex flex-col min-h-screen bg-gray-50">

@@ -1,47 +1,53 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { User, Mail, Lock, UserPlus } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { User, Mail, Lock, UserPlus } from "lucide-react";
 
-import { registrationFormSchema } from '../../utils/userFormValidation';
-import { register } from '../../state/slices/userSlice';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Alert from '../../components/ui/Alert';
+import { registrationFormSchema } from "../../utils/userFormValidation";
+import { register } from "../../state/slices/userSlice";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Alert from "../../components/ui/Alert";
 
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { status } = useSelector((state) => state.user);
 
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
   const [formErrors, setFormErrors] = useState({});
-  const [registerError, setRegisterError] = useState('');
+  const [registerError, setRegisterError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.currentTarget;
     setFormData({ ...formData, [name]: value });
-    setFormErrors({ ...formErrors, [name]: '' });
-    setRegisterError('');
+    setFormErrors({ ...formErrors, [name]: "" });
+    setRegisterError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setRegisterError('');
+    setRegisterError("");
 
     try {
       await registrationFormSchema.validate(formData, { abortEarly: false });
       await dispatch(register(formData)).unwrap();
-      navigate('/login');
+      navigate("/login");
     } catch (err) {
       if (err?.inner) {
         const errors = {};
-        err.inner.forEach((field) => { errors[field.path] = field.message; });
+        err.inner.forEach((field) => {
+          errors[field.path] = field.message;
+        });
         setFormErrors(errors);
-      } else if (typeof err === 'string') {
+      } else if (typeof err === "string") {
         setRegisterError(err);
       } else {
-        setRegisterError(err?.message || 'Erro ao registrar. Tente novamente.');
+        setRegisterError(err?.message || "Erro ao registrar. Tente novamente.");
       }
     }
   };
@@ -54,7 +60,9 @@ const Register = () => {
             <UserPlus className="text-white h-8 w-8" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Criar Conta</h1>
-          <p className="text-gray-500 mt-1">Cadastre-se para começar a usar o ImplantDetect</p>
+          <p className="text-gray-500 mt-1">
+            Cadastre-se para começar a usar o ImplantDetect
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -68,7 +76,7 @@ const Register = () => {
               value={formData.username}
               onChange={handleChange}
               error={formErrors.username}
-              disabled={status === 'loading'}
+              disabled={status === "loading"}
             />
             <Input
               label="E-mail"
@@ -79,7 +87,7 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               error={formErrors.email}
-              disabled={status === 'loading'}
+              disabled={status === "loading"}
             />
             <Input
               label="Senha"
@@ -90,18 +98,27 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               error={formErrors.password}
-              disabled={status === 'loading'}
+              disabled={status === "loading"}
             />
             {registerError && <Alert variant="error">{registerError}</Alert>}
-            <Button type="submit" className="w-full" size="lg" loading={status === 'loading'} icon={UserPlus}>
-              {status === 'loading' ? 'Cadastrando...' : 'Cadastrar'}
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              loading={status === "loading"}
+              icon={UserPlus}
+            >
+              {status === "loading" ? "Cadastrando..." : "Cadastrar"}
             </Button>
           </form>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Já tem uma conta?{' '}
-          <Link to="/login" className="text-primary-600 font-medium hover:text-primary-700">
+          Já tem uma conta?{" "}
+          <Link
+            to="/login"
+            className="text-primary-600 font-medium hover:text-primary-700"
+          >
             Entrar
           </Link>
         </p>

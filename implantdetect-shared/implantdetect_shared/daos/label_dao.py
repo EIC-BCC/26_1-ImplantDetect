@@ -3,15 +3,57 @@ from sqlalchemy.future import select
 
 from implantdetect_shared.entities.label import Label
 
+# Cache em memória — labels são imutáveis (seeded no startup, nunca alteradas)
+_label_cache_by_id: dict[int, str] = {}
+_label_cache_by_name: dict[str, int] = {}
+
 
 class LabelDao:
     def __init__(self, db: AsyncSession):
         self.db = db
 
     async def get_label_by_id(self, label_id: int) -> Label | None:
+        if label_id in _label_cache_by_id:
+            label = Label()
+            label.id = label_id
+            label.name = _label_cache_by_id[label_id]
+            return label
         result = await self.db.execute(select(Label).filter(Label.id == label_id))
-        return result.scalars().first()
+        fetched: Label | None = result.scalars().first()
+        if fetched:
+            _label_cache_by_id[fetched.id] = str(fetched.name)
+        return fetched
 
     async def get_label_by_name(self, name: str) -> Label | None:
         result = await self.db.execute(select(Label).filter(Label.name == name))
-        return result.scalars().first()
+        label = result.scalars().first()
+        if label:
+            _label_cache_by_id[label.id] = str(label.name)
+        return label
+
+    async def get_labels_by_ids(self, ids: set[int]) -> list[Label]:
+        """Busca múltiplas labels em uma única query — elimina N+1."""
+        if not ids:
+            return []
+
+        # Checar quais já estão no cache
+        cached: list[Label] = []
+        missing: set[int] = set()
+        for lid in ids:
+            if lid in _label_cache_by_id:
+                l = Label()
+                l.id = lid
+                l.name = _label_cache_by_id[lid]
+                cached.append(l)
+            else:
+                missing.add(lid)
+
+        if not missing:
+            return cached
+
+        result = await self.db.execute(select(Label).filter(Label.id.in_(missing)))
+        fetched = list(result.scalars().all())
+        for label in fetched:
+            _label_cache_by_id[label.id] = str(label.name)
+
+        return cached + fetched

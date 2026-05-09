@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from core.configuration import settings
 from core.logging import get_logger
+from implantdetect_shared.entities import Base  # registers all ORM tables with metadata
 
 logger = get_logger(__name__)
 

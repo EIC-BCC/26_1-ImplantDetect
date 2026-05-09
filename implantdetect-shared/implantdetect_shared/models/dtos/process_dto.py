@@ -45,17 +45,19 @@ class ProcessResponse(BaseModel):
     process_id: int
     user_id: int
     image_id: int
+    image_url: str | None
     status: int
     status_name: str
     created_at: str
     updated_at: str
 
     @classmethod
-    def from_orm(cls, process, status_name: str = "Unknown"):
+    def from_orm(cls, process, status_name: str = "Unknown", image=None):
         return cls(
             process_id=process.id,
             user_id=process.user_id,
             image_id=process.image_id,
+            image_url=(image.file_hash + image.file_extension) if image else None,
             status=process.status,
             status_name=status_name,
             created_at=str(process.created_at),

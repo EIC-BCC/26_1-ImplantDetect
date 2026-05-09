@@ -1,15 +1,11 @@
 from sqlalchemy import text, select
 from fastapi import HTTPException, status
-from sqlalchemy.schema import CreateSchema
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from core.logging import get_logger
-from implantdetect_shared.entities.base import Base
-from implantdetect_shared.entities.label import Label
-from implantdetect_shared.entities.image import Image  # noqa: F401 – ensure table is registered
-from implantdetect_shared.entities.user import User  # noqa: F401 – ensure table is registered
 from core.configuration import settings
+from implantdetect_shared.entities import Base, Label
 
 logger = get_logger(__name__)
 
@@ -21,81 +17,51 @@ async_session_factory = async_sessionmaker(bind=async_engine, expire_on_commit=F
 
 
 async def get_async_db():
-    """
-    Fornece uma sessão de banco de dados assíncrona.
-    """
-
     async with async_session_factory() as session:
         try:
             yield session
             await session.commit()
-
         except HTTPException:
             await session.rollback()
             raise
-
         except Exception as e:
             await session.rollback()
             logger.error(f"Database error: {str(e)}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Erro interno do banco de dados: {str(e)}",
+                detail="Erro interno do banco de dados.",
             )
-
         finally:
             await session.close()
 
 
-async def _apply_column_migrations(conn) -> None:
-    """Add columns that were introduced after initial table creation."""
-    migrations = [
-        (
-            "users",
-            "role",
-            "ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'user'",
-        ),
-    ]
-    for table, column, ddl in migrations:
-        result = await conn.execute(
-            text(
-                "SELECT 1 FROM information_schema.columns "
-                "WHERE table_name = :t AND column_name = :c"
-            ),
-            {"t": table, "c": column},
-        )
-        if result.fetchone() is None:
-            await conn.execute(text(ddl))
-            logger.info(f"Column migration applied: {table}.{column}")
-
-
 async def create_tables():
+    """Cria tabelas apenas em ambientes não-produção (dev/testes).
+    Em produção, o schema é gerenciado pelo Alembic.
     """
-    Cria as tabelas do banco de dados.
-    """
+    if settings.ENVIRONMENT == "production":
+        logger.info(
+            "Produção detectada — schema gerenciado pelo Alembic, pulando create_all."
+        )
+        await _seed_labels_if_empty()
+        return
 
     try:
         async with async_engine.begin() as conn:
-            schemas = await conn.run_sync(
-                lambda sync_conn: sync_conn.dialect.get_schema_names(sync_conn)
-            )
-
-            if "public" not in schemas:
-                await conn.execute(CreateSchema("public"))
-
             await conn.run_sync(Base.metadata.create_all)
-            await _apply_column_migrations(conn)
-
-        logger.info("Tabelas do banco de dados criadas com sucesso")
-
-        async with async_session_factory() as session:
-            result = await session.execute(select(Label).limit(1))
-            if result.scalars().first() is None:
-                await _seed_labels(session)
-                await session.commit()
-                logger.info("Labels inseridas com sucesso")
-
+        logger.info("Tabelas criadas/verificadas com sucesso.")
+        await _seed_labels_if_empty()
     except Exception as e:
-        logger.error(f"Erro ao criar tabelas: {str(e)}", exc_info=False)
+        logger.error(f"Erro ao criar tabelas: {str(e)}", exc_info=True)
+
+
+async def _seed_labels_if_empty():
+    async with async_session_factory() as session:
+        result = await session.execute(select(Label).limit(1))
+        if result.scalars().first() is None:
+            await _seed_labels(session)
+            await session.commit()
+            logger.info("Labels inseridas com sucesso.")
 
 
 async def _seed_labels(session):
@@ -154,18 +120,10 @@ async def _seed_labels(session):
 
 
 async def database_health_check():
-    """
-    Verifica se o banco de dados está disponível.
-    """
-
     try:
         async with async_session_factory() as session:
             await session.execute(text("SELECT 1"))
-            logger.info("Banco de dados assíncrono está acessível")
             return "available"
-
     except Exception as e:
-        logger.error(
-            f"Erro ao conectar ao banco de dados assíncrono: {str(e)}", exc_info=True
-        )
+        logger.error(f"Erro ao conectar ao banco: {str(e)}", exc_info=True)
         return "unavailable"

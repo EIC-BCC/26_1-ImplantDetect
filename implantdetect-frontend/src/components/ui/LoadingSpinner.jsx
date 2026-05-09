@@ -1,9 +1,9 @@
-const LoadingSpinner = ({ size = 'md', className = '' }) => {
+const LoadingSpinner = ({ size = "md", className = "" }) => {
   const sizes = {
-    sm: 'h-4 w-4',
-    md: 'h-8 w-8',
-    lg: 'h-12 w-12',
-    xl: 'h-16 w-16',
+    sm: "h-4 w-4",
+    md: "h-8 w-8",
+    lg: "h-12 w-12",
+    xl: "h-16 w-16",
   };
 
   return (
@@ -15,7 +15,9 @@ const LoadingSpinner = ({ size = 'md', className = '' }) => {
       >
         <circle
           className="opacity-25"
-          cx="12" cy="12" r="10"
+          cx="12"
+          cy="12"
+          r="10"
           stroke="currentColor"
           strokeWidth="4"
         />

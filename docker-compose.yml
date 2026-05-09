@@ -1,19 +1,19 @@
 services:
   postgres:
-    image: postgres:18-alpine
+    image: postgres:17-alpine
     container_name: implantdetect-database
     environment:
-      POSTGRES_DB: implantdetect
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB:-implantdetect}
+      POSTGRES_USER: ${POSTGRES_USER:-implantdetect_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD obrigatório}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
     networks:
       - implantdetect-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U root -d implantdetect"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-implantdetect_user} -d ${POSTGRES_DB:-implantdetect}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,11 +22,11 @@ services:
     image: rabbitmq:4.3.0-management-alpine
     container_name: implantdetect-rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-implantdetect}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?RABBITMQ_PASSWORD obrigatório}
     networks:
       - implantdetect-network
     healthcheck:
@@ -45,8 +45,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://root:password@postgres:5432/implantdetect
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL obrigatório}
+      - RABBITMQ_URL=${RABBITMQ_URL:?RABBITMQ_URL obrigatório}
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY obrigatório}
       - PYTHONPATH=/app
     depends_on:
       postgres:
@@ -66,8 +67,8 @@ services:
       dockerfile: implantdetect-prediction/Dockerfile
     container_name: implantdetect-prediction
     environment:
-      - DATABASE_URL=postgresql+asyncpg://root:password@postgres:5432/implantdetect
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DATABASE_URL=${DATABASE_URL:?DATABASE_URL obrigatório}
+      - RABBITMQ_URL=${RABBITMQ_URL:?RABBITMQ_URL obrigatório}
       - UPLOAD_FILE_PATH=/app/uploads
       - YOLO_MODEL_PATH=/app/yolo_weights/best.pt
       - PYTHONPATH=/app

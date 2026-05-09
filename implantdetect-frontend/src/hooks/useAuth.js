@@ -1,4 +1,4 @@
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 
 const useAuth = () => {
   const token = useSelector((state) => state.user.token);
@@ -10,8 +10,8 @@ const useAuth = () => {
     user,
     token,
     status,
-    isAdmin: user?.role === 'admin',
-    isSpecialist: user?.role === 'specialist' || user?.role === 'admin',
+    isAdmin: user?.role === "admin",
+    isSpecialist: user?.role === "specialist" || user?.role === "admin",
     isUser: !!token,
   };
 };

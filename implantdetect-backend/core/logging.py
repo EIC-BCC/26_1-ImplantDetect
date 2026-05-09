@@ -1,30 +1,34 @@
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 
 
 def setup_logging():
-    """
-    Configura o logging para a aplicação.
-    """
-
     os.makedirs("logs", exist_ok=True)
+
+    formatter = logging.Formatter(
+        fmt="%(levelname)s | %(asctime)s | %(name)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    file_handler = RotatingFileHandler(
+        "logs/app.log",
+        maxBytes=10 * 1024 * 1024,  # 10MB por arquivo
+        backupCount=5,
+        encoding="utf-8",
+    )
+    file_handler.setFormatter(formatter)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
 
     logging.basicConfig(
         level=logging.INFO,
-        format="%(levelname)s | %(asctime)s | %(name)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[logging.FileHandler("logs/app.log"), logging.StreamHandler()],
+        handlers=[file_handler, stream_handler],
     )
 
-    logger = logging.getLogger(__name__)
-    return logger
 
-
-def get_logger(name: str = __name__):
-    """
-    Retorna uma instância de logger.
-    """
-
+def get_logger(name: str = __name__) -> logging.Logger:
     return logging.getLogger(name)
 
 

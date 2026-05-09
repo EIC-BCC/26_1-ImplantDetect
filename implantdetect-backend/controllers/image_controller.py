@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_async_db
@@ -44,6 +44,14 @@ async def get_image(
     db: AsyncSession = Depends(get_async_db),
     user: JWTPayload = Depends(get_current_user),
 ):
+    user_id = int(user["sub"])
     image_service = ImageService(db)
     image = await image_service.get_image_by_id(image_id)
+
+    # Verificar ownership: usuário só acessa suas próprias imagens (admin acessa todas)
+    if image.user_id != user_id and user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Acesso negado."
+        )
+
     return Result.ok(data=ImageResponse.from_orm(image).model_dump())

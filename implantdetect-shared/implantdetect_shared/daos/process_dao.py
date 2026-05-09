@@ -1,3 +1,5 @@
+from sqlalchemy import update
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -15,7 +17,7 @@ class ProcessDao:
 
     async def add_process(self, process: Process) -> Process:
         self.db.add(process)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(process)
         return process
 
@@ -26,18 +28,28 @@ class ProcessDao:
         if process:
             setattr(process, "status", status)
             self.db.add(process)
-            await self.db.commit()
+            await self.db.flush()
             await self.db.refresh(process)
             return process
         return None
 
-    async def get_all_processes(self) -> list[Process]:
-        result = await self.db.execute(select(Process))
+    async def get_all_processes(
+        self, limit: int = 50, offset: int = 0
+    ) -> list[Process]:
+        result = await self.db.execute(
+            select(Process).order_by(Process.id).limit(limit).offset(offset)
+        )
         return list(result.scalars().all())
 
-    async def get_all_processes_by_user(self, user_id: int) -> list[Process]:
+    async def get_all_processes_by_user(
+        self, user_id: int, limit: int = 50, offset: int = 0
+    ) -> list[Process]:
         result = await self.db.execute(
-            select(Process).filter(Process.user_id == user_id)
+            select(Process)
+            .filter(Process.user_id == user_id)
+            .order_by(Process.id.desc())
+            .limit(limit)
+            .offset(offset)
         )
         return list(result.scalars().all())
 
@@ -51,6 +63,16 @@ class ProcessDao:
         self, process_result: ProcessResults
     ) -> ProcessResults:
         self.db.add(process_result)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(process_result)
         return process_result
+
+    async def fail_stale_processes(
+        self, failed_status: int, stale_statuses: list[int]
+    ) -> int:
+        cursor: CursorResult = await self.db.execute(  # type: ignore[assignment]
+            update(Process)
+            .where(Process.status.in_(stale_statuses))
+            .values(status=failed_status)
+        )
+        return cursor.rowcount

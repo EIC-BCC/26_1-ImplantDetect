@@ -76,13 +76,20 @@ class ProcessService:
             await self._handle_process_not_found()
         logger.info(f"Processo {process.id} recuperado com sucesso.")
 
+        image = await self.image_dao.get_image_by_id(process.image_id)
         status_value = getattr(process, "status", 0)
         status_name = self._get_status_name(status_value)
-        return ProcessResponse.from_orm(process, status_name)
+        return ProcessResponse.from_orm(process, status_name, image)
 
-    async def get_all_processes_by_user(self, user_id: int) -> list[ProcessResponse]:
-        processes = await self.process_dao.get_all_processes_by_user(user_id)
-        logger.info(f"{len(processes)} processos recuperados para o usuário {user_id}.")
+    async def get_all_processes_by_user(
+        self, user_id: int, limit: int = 50, offset: int = 0
+    ) -> list[ProcessResponse]:
+        processes = await self.process_dao.get_all_processes_by_user(
+            user_id, limit=limit, offset=offset
+        )
+        logger.info(
+            f"{len(processes)} processos recuperados para usuário ID={user_id}."
+        )
 
         return [
             ProcessResponse.from_orm(
@@ -104,26 +111,24 @@ class ProcessService:
         )
         image = await self.image_dao.get_image_by_id(process.image_id)
 
-        response = []
-        for result in results:
-            class_id_value = getattr(result, "class_id", 0)
-            class_name = await self._get_label_name(class_id_value)
-            response.append(ProcessResultsResponse.from_orm(result, class_name, image))
-        return response
+        # Bulk fetch de labels — uma única query para todos os class_ids
+        class_ids = {
+            r.class_id for r in results if getattr(r, "class_id", None) is not None
+        }
+        labels = await self.label_dao.get_labels_by_ids(class_ids)
+        label_map = {label.id: str(label.name) for label in labels}
 
-    async def _get_label_name(self, class_id: int) -> str:
-        label = await self.label_dao.get_label_by_id(class_id)
-        if not label:
-            logger.warning(f"Classe {class_id} não encontrada.")
-            return f"Classe {class_id}"
-        return str(label.name)
+        return [
+            ProcessResultsResponse.from_orm(
+                result,
+                label_map.get(result.class_id, f"Classe {result.class_id}"),
+                image,
+            )
+            for result in results
+        ]
 
     def _get_status_name(self, status_id: int) -> str:
-        status_mapping = {
-            ProcessStatus.PENDING: "Pendente",
-            ProcessStatus.RUNNING: "Executando",
-            ProcessStatus.COMPLETED: "Concluído",
-            ProcessStatus.FAILED: "Falhou",
-            ProcessStatus.CANCELED: "Cancelado",
-        }
-        return status_mapping.get(status_id, f"Status {status_id}")
+        try:
+            return ProcessStatus(status_id).label
+        except ValueError:
+            return f"Status {status_id}"

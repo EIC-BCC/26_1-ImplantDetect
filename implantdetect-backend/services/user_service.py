@@ -21,7 +21,6 @@ class UserService:
         self.dao = UserDao(db)
 
     async def _handle_user_not_found(self) -> NoReturn:
-        logger.error("Usuário não encontrado.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado."
         )
@@ -37,8 +36,7 @@ class UserService:
             )
 
         user = await self.dao.add_user(user_data, hash_password(user_data.password))
-
-        logger.info(f"Usuário {user.username} ({user.email}) criado com sucesso.")
+        logger.info(f"Usuário ID={user.id} criado com sucesso.")
         return user
 
     async def authenticate_user(self, identifier: str, password: str):
@@ -53,12 +51,18 @@ class UserService:
                 detail="Credenciais inválidas.",
             )
 
+        if not user.active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Conta desativada. Entre em contato com o administrador.",
+            )
+
         access_token = create_access_token(
             data={"sub": str(user.id), "role": getattr(user, "role", "user")},
             expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
         )
 
-        logger.info(f"Usuário {user.username} ({user.email}) autenticado com sucesso.")
+        logger.info(f"Usuário ID={user.id} autenticado com sucesso.")
         return UserTokenResponse.from_token(
             access_token, user.id, user.username, getattr(user, "role", "user")
         )
@@ -69,9 +73,7 @@ class UserService:
         if not user:
             await self._handle_user_not_found()
 
-        logger.info(
-            f"Dados do usuário {user.username} ({user.email}) recuperados com sucesso."
-        )
+        logger.info(f"Usuário ID={user_id} recuperado com sucesso.")
         return user
 
     async def update_user(self, updated_user_data: UserUpdateRequest):
@@ -80,7 +82,5 @@ class UserService:
         if not user:
             await self._handle_user_not_found()
 
-        logger.info(
-            f"Dados do usuário {user.username} ({user.email}) atualizados com sucesso."
-        )
+        logger.info(f"Usuário ID={user.id} atualizado com sucesso.")
         return user

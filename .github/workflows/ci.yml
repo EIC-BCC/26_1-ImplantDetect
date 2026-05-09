@@ -31,9 +31,17 @@ jobs:
       - name: Ruff format check
         run: ruff format --check implantdetect-backend/ implantdetect-prediction/ implantdetect-shared/
 
-      - name: Mypy
-        run: mypy implantdetect-backend/ --ignore-missing-imports
-        working-directory: ${{ github.workspace }}
+      - name: Mypy (backend)
+        run: mypy .
+        working-directory: ${{ github.workspace }}/implantdetect-backend
+
+      - name: Mypy (prediction)
+        run: mypy .
+        working-directory: ${{ github.workspace }}/implantdetect-prediction
+
+      - name: Mypy (shared)
+        run: mypy .
+        working-directory: ${{ github.workspace }}/implantdetect-shared
 
   lint-frontend:
     name: Lint frontend

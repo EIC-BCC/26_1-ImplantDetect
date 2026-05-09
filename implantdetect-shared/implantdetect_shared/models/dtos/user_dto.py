@@ -1,17 +1,47 @@
-from pydantic import BaseModel
+from typing import Literal
+from pydantic import BaseModel, Field, field_validator
 
 
 class UserRegisterRequest(BaseModel):
-    username: str
-    email: str
-    password: str
+    username: str = Field(..., min_length=3, max_length=50)
+    email: str = Field(..., max_length=254)
+    password: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        if not any(c.isdigit() for c in v):
+            raise ValueError("A senha deve conter ao menos um número.")
+        if not any(c.isalpha() for c in v):
+            raise ValueError("A senha deve conter ao menos uma letra.")
+        return v
 
 
 class UserUpdateRequest(BaseModel):
-    user_id: int
-    username: str | None = None
-    email: str | None = None
-    password: str | None = None
+    # user_id é injetado pelo controller a partir do JWT — nunca aceito do body
+    user_id: int = Field(exclude=True, default=0)
+    username: str | None = Field(default=None, min_length=3, max_length=50)
+    email: str | None = Field(default=None, max_length=254)
+    password: str | None = Field(default=None, min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not any(c.isdigit() for c in v):
+            raise ValueError("A senha deve conter ao menos um número.")
+        if not any(c.isalpha() for c in v):
+            raise ValueError("A senha deve conter ao menos uma letra.")
+        return v
+
+
+class SetRoleRequest(BaseModel):
+    role: Literal["user", "specialist", "admin"]
+
+
+class SetActiveRequest(BaseModel):
+    active: bool
 
 
 class UserTokenResponse(BaseModel):

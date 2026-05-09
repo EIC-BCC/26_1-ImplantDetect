@@ -36,6 +36,7 @@ async def handle_message(message: IncomingMessage):
                 await process_dao.update_process_status(
                     request.process_id, ProcessStatus.RUNNING
                 )
+                await session.commit()
 
                 predictions = await yolo.predict(
                     request.file_hash, request.file_extension
@@ -62,21 +63,31 @@ async def handle_message(message: IncomingMessage):
                 await process_dao.update_process_status(
                     request.process_id, ProcessStatus.COMPLETED
                 )
+                await session.commit()
                 logger.info(
                     f"Processo {request.process_id} concluído com {len(predictions)} predições."
                 )
 
             except Exception as e:
+                await session.rollback()
                 logger.error(
                     f"Erro ao processar processo {request.process_id}: {e}",
                     exc_info=True,
                 )
-                await process_dao.update_process_status(
-                    request.process_id, ProcessStatus.FAILED
-                )
-                await process_dao.add_process_result(
-                    ProcessResults(process_id=request.process_id, message=str(e))
-                )
+                try:
+                    await process_dao.update_process_status(
+                        request.process_id, ProcessStatus.FAILED
+                    )
+                    await process_dao.add_process_result(
+                        ProcessResults(process_id=request.process_id, message=str(e))
+                    )
+                    await session.commit()
+                except Exception as inner_e:
+                    await session.rollback()
+                    logger.error(
+                        f"Falha ao registrar erro do processo {request.process_id}: {inner_e}",
+                        exc_info=True,
+                    )
 
 
 async def main():
@@ -86,7 +97,11 @@ async def main():
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, stop_event.set)
 
-    logger.info(f"Conectando ao RabbitMQ em {settings.RABBITMQ_URL}...")
+    from urllib.parse import urlparse
+
+    parsed = urlparse(settings.RABBITMQ_URL)
+    safe_url = parsed._replace(netloc=f"{parsed.hostname}:{parsed.port}").geturl()
+    logger.info(f"Conectando ao RabbitMQ em {safe_url}...")
     connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
 
     async with connection:

@@ -1,48 +1,50 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Mail, Lock, LogIn } from "lucide-react";
 
-import { loginFormSchema } from '../../utils/userFormValidation';
-import { login, clearError } from '../../state/slices/userSlice';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Alert from '../../components/ui/Alert';
+import { loginFormSchema } from "../../utils/userFormValidation";
+import { login, clearError } from "../../state/slices/userSlice";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Alert from "../../components/ui/Alert";
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { status } = useSelector((state) => state.user);
 
-  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [formErrors, setFormErrors] = useState({});
-  const [loginError, setLoginError] = useState('');
+  const [loginError, setLoginError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.currentTarget;
     setFormData({ ...formData, [name]: value });
-    setFormErrors({ ...formErrors, [name]: '' });
-    setLoginError('');
+    setFormErrors({ ...formErrors, [name]: "" });
+    setLoginError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoginError('');
+    setLoginError("");
     dispatch(clearError());
 
     try {
       await loginFormSchema.validate(formData, { abortEarly: false });
       await dispatch(login(formData)).unwrap();
-      navigate('/home');
+      navigate("/home");
     } catch (err) {
       if (err?.inner) {
         const errors = {};
-        err.inner.forEach((field) => { errors[field.path] = field.message; });
+        err.inner.forEach((field) => {
+          errors[field.path] = field.message;
+        });
         setFormErrors(errors);
-      } else if (typeof err === 'string') {
+      } else if (typeof err === "string") {
         setLoginError(err);
       } else {
-        setLoginError('Usuário ou senha inválidos');
+        setLoginError("Usuário ou senha inválidos");
       }
     }
   };
@@ -54,8 +56,12 @@ const Login = () => {
           <div className="w-16 h-16 bg-linear-to-br from-primary-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <span className="text-white text-2xl">🦷</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Bem-vindo de volta</h1>
-          <p className="text-gray-500 mt-1">Entre na sua conta para continuar</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Bem-vindo de volta
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Entre na sua conta para continuar
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -81,15 +87,24 @@ const Login = () => {
               error={formErrors.password}
             />
             {loginError && <Alert variant="error">{loginError}</Alert>}
-            <Button type="submit" className="w-full" size="lg" loading={status === 'loading'} icon={LogIn}>
+            <Button
+              type="submit"
+              className="w-full"
+              size="lg"
+              loading={status === "loading"}
+              icon={LogIn}
+            >
               Entrar
             </Button>
           </form>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Não tem uma conta?{' '}
-          <Link to="/register" className="text-primary-600 font-medium hover:text-primary-700">
+          Não tem uma conta?{" "}
+          <Link
+            to="/register"
+            className="text-primary-600 font-medium hover:text-primary-700"
+          >
             Cadastre-se
           </Link>
         </p>

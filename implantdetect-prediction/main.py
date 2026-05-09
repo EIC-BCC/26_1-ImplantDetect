@@ -97,7 +97,11 @@ async def main():
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, stop_event.set)
 
-    logger.info(f"Conectando ao RabbitMQ em {settings.RABBITMQ_URL}...")
+    from urllib.parse import urlparse
+
+    parsed = urlparse(settings.RABBITMQ_URL)
+    safe_url = parsed._replace(netloc=f"{parsed.hostname}:{parsed.port}").geturl()
+    logger.info(f"Conectando ao RabbitMQ em {safe_url}...")
     connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
 
     async with connection:

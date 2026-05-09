@@ -51,12 +51,12 @@ class ImageDAO:
 
         except HTTPException:
             raise
-        except Exception as e:
+        except Exception:
             if "tmp_path" in dir() and tmp_path.exists():
                 os.unlink(tmp_path)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Erro ao salvar a imagem: {str(e)}",
+                detail="Erro ao salvar a imagem.",
             )
 
     async def add_image(self, image: Image) -> Image:
@@ -66,10 +66,10 @@ class ImageDAO:
             await self.db.refresh(image)
             return image
 
-        except Exception as e:
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Erro ao adicionar imagem ao banco de dados: {str(e)}",
+                detail="Erro ao adicionar imagem ao banco de dados.",
             )
 
     async def get_all_images_from_user(self, user_id: int) -> list[Image]:

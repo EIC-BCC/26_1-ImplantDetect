@@ -41,10 +41,10 @@ class LabelDao:
         missing: set[int] = set()
         for lid in ids:
             if lid in _label_cache_by_id:
-                l = Label()
-                l.id = lid
-                l.name = _label_cache_by_id[lid]
-                cached.append(l)
+                label = Label()
+                label.id = lid
+                label.name = _label_cache_by_id[lid]
+                cached.append(label)
             else:
                 missing.add(lid)
 

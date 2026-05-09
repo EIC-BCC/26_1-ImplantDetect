@@ -7,8 +7,8 @@ from aio_pika import IncomingMessage
 from core.configuration import settings
 from core.database import async_session_factory
 from core.logging import get_logger, setup_logging
-from daos.label_dao import LabelDao
-from daos.process_dao import ProcessDao
+from implantdetect_shared.daos.label_dao import LabelDao
+from implantdetect_shared.daos.process_dao import ProcessDao
 from implantdetect_shared.entities.process_results import ProcessResults
 from implantdetect_shared.enums.process_status import ProcessStatus
 from implantdetect_shared.schemas.queue_message import PredictionRequest

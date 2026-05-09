@@ -3,16 +3,22 @@ import uvicorn
 
 from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse, FileResponse
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import Depends, FastAPI, Request, HTTPException
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from core.logging import get_logger
 from core.configuration import settings
-from models.dtos.result_dto import Result
-from controllers import user_controller, image_controller, process_controller
+from implantdetect_shared.models.dtos.result_dto import Result
+from controllers import (
+    user_controller,
+    image_controller,
+    process_controller,
+    admin_controller,
+)
 from core.database import create_tables, database_health_check
 from services.queue_service import queue_service
 from fastapi.middleware.cors import CORSMiddleware
+from core.security import get_current_user, JWTPayload
 
 logger = get_logger(__name__)
 
@@ -39,13 +45,12 @@ app = FastAPI(
     redoc_url="/redoc" if docs_enabled else None,
     openapi_url="/openapi.json" if docs_enabled else None,
     version="1.0.0",
-    root_path="/api",
     lifespan=lifespan,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost"],
+    allow_origins=settings.CORS_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,6 +59,7 @@ app.add_middleware(
 app.include_router(user_controller.router, prefix="/users", tags=["users"])
 app.include_router(image_controller.router, prefix="/images", tags=["images"])
 app.include_router(process_controller.router, prefix="/processing", tags=["processing"])
+app.include_router(admin_controller.router, prefix="/admin", tags=["admin"])
 
 
 @app.exception_handler(StarletteHTTPException)
@@ -81,9 +87,12 @@ async def health_check():
     return {"status": "ok", "database": db_status}
 
 
-@app.get("/uploads/{file_hash}", tags=["uploads"])
-async def get_protected_image(file_hash: str):
-    file_path = os.path.join("uploads", file_hash)
+@app.get("/uploads/{filename:path}", tags=["uploads"])
+async def get_protected_image(
+    filename: str,
+    user: JWTPayload = Depends(get_current_user),
+):
+    file_path = os.path.join(settings.IMAGE_REPOSITORY, filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
     return FileResponse(file_path)

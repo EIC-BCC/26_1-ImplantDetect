@@ -3,13 +3,17 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.logging import get_logger
-from daos.label_dao import LabelDao
-from daos.process_dao import ProcessDao
-from models.entities.process import Process
-from models.entities.image import Image
-from daos.image_dao import ImageDAO
-from models.dtos.process_dto import ProcessResultsResponse, ProcessResponse
-from enums.process_status import ProcessStatus
+from core.configuration import settings
+from implantdetect_shared.daos.label_dao import LabelDao
+from implantdetect_shared.daos.process_dao import ProcessDao
+from implantdetect_shared.daos.image_dao import ImageDAO
+from implantdetect_shared.entities.process import Process
+from implantdetect_shared.entities.image import Image
+from implantdetect_shared.models.dtos.process_dto import (
+    ProcessResultsResponse,
+    ProcessResponse,
+)
+from implantdetect_shared.enums.process_status import ProcessStatus
 from services.queue_service import queue_service
 
 logger = get_logger(__name__)
@@ -19,7 +23,7 @@ class ProcessService:
     def __init__(self, db: AsyncSession):
         self.process_dao = ProcessDao(db)
         self.label_dao = LabelDao(db)
-        self.image_dao = ImageDAO(db)
+        self.image_dao = ImageDAO(db, settings.IMAGE_REPOSITORY)
 
     async def add_process(self, image: Image):
         if not image:

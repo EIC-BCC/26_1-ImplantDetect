@@ -1,7 +1,9 @@
 aio-pika==9.6.2
 asyncpg==0.31.0
+bcrypt==4.2.1
 fastapi==0.136.1
 gunicorn==25.3.0
+passlib[bcrypt]==1.7.4
 pillow==12.2.0
 pydantic==2.13.3
 python-dotenv==1.2.2

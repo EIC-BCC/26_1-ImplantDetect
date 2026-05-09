@@ -3,7 +3,7 @@ from ultralytics import YOLO
 
 from core.logging import get_logger
 from core.configuration import settings
-from models.dtos.process_dto import ProcessPredictionResponse
+from implantdetect_shared.models.dtos.process_dto import ProcessPredictionResponse
 
 logger = get_logger(__name__)
 

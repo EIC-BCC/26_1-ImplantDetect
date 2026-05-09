@@ -4,10 +4,10 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.logging import get_logger
-from daos.user_dao import UserDao
 from core.configuration import settings
-from core.security import create_access_token, verify_password
-from models.dtos.user_dto import (
+from core.security import create_access_token, verify_password, hash_password
+from implantdetect_shared.daos.user_dao import UserDao
+from implantdetect_shared.models.dtos.user_dto import (
     UserUpdateRequest,
     UserRegisterRequest,
     UserTokenResponse,
@@ -27,10 +27,6 @@ class UserService:
         )
 
     async def add_user(self, user_data: UserRegisterRequest):
-        """
-        Adiciona um novo usuário ao sistema.
-        """
-
         existing_user = await self.dao.get_user_by_username_or_email(
             user_data.username
         ) or await self.dao.get_user_by_username_or_email(user_data.email)
@@ -40,7 +36,7 @@ class UserService:
                 detail="Nome de usuário ou email já cadastrado.",
             )
 
-        user = await self.dao.add_user(user_data)
+        user = await self.dao.add_user(user_data, hash_password(user_data.password))
 
         logger.info(f"Usuário {user.username} ({user.email}) criado com sucesso.")
         return user
@@ -58,12 +54,14 @@ class UserService:
             )
 
         access_token = create_access_token(
-            data={"sub": str(user.id)},
+            data={"sub": str(user.id), "role": getattr(user, "role", "user")},
             expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
         )
 
         logger.info(f"Usuário {user.username} ({user.email}) autenticado com sucesso.")
-        return UserTokenResponse.from_token(access_token)
+        return UserTokenResponse.from_token(
+            access_token, user.id, user.username, getattr(user, "role", "user")
+        )
 
     async def get_user(self, user_id: int):
         user = await self.dao.get_user_by_id(user_id)
@@ -77,7 +75,7 @@ class UserService:
         return user
 
     async def update_user(self, updated_user_data: UserUpdateRequest):
-        user = await self.dao.update_user(updated_user_data)
+        user = await self.dao.update_user(updated_user_data, hash_password)
 
         if not user:
             await self._handle_user_not_found()

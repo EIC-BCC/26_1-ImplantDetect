@@ -12,7 +12,7 @@ class Settings:
     ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
     UPLOAD_FILE_PATH: str = os.getenv("UPLOAD_FILE_PATH", "./uploads")
 
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your_default_secret_key")
+    SECRET_KEY: str = os.getenv("SECRET_KEY") or _require("SECRET_KEY")
     ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
@@ -27,6 +27,9 @@ class Settings:
 
     YOLO_MODEL_PATH: str = os.getenv("YOLO_MODEL_PATH", "yolo11m-obb.pt")
     RABBITMQ_URL: str = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/")
+    CORS_ORIGINS: str = os.getenv(
+        "CORS_ORIGINS", "http://localhost:5173,http://localhost"
+    )
 
 
 settings = Settings()

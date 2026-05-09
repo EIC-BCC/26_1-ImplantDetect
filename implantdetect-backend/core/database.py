@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from core.logging import get_logger
-from models.entities.base import Base
-from models.entities.label import Label
+from implantdetect_shared.entities.base import Base
+from implantdetect_shared.entities.label import Label
+from implantdetect_shared.entities.image import Image  # noqa: F401 – ensure table is registered
+from implantdetect_shared.entities.user import User  # noqa: F401 – ensure table is registered
 from core.configuration import settings
 
 logger = get_logger(__name__)
@@ -44,6 +46,28 @@ async def get_async_db():
             await session.close()
 
 
+async def _apply_column_migrations(conn) -> None:
+    """Add columns that were introduced after initial table creation."""
+    migrations = [
+        (
+            "users",
+            "role",
+            "ALTER TABLE users ADD COLUMN role VARCHAR DEFAULT 'user'",
+        ),
+    ]
+    for table, column, ddl in migrations:
+        result = await conn.execute(
+            text(
+                "SELECT 1 FROM information_schema.columns "
+                "WHERE table_name = :t AND column_name = :c"
+            ),
+            {"t": table, "c": column},
+        )
+        if result.fetchone() is None:
+            await conn.execute(text(ddl))
+            logger.info(f"Column migration applied: {table}.{column}")
+
+
 async def create_tables():
     """
     Cria as tabelas do banco de dados.
@@ -59,6 +83,7 @@ async def create_tables():
                 await conn.execute(CreateSchema("public"))
 
             await conn.run_sync(Base.metadata.create_all)
+            await _apply_column_migrations(conn)
 
         logger.info("Tabelas do banco de dados criadas com sucesso")
 

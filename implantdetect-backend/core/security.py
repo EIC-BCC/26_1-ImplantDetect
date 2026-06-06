@@ -20,6 +20,7 @@ _BCRYPT_MAX_BYTES = 72
 def _truncate_password(password: str) -> bytes:
     return password.encode("utf-8")[:_BCRYPT_MAX_BYTES]
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/login")
 
 

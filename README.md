@@ -1,7 +1,7 @@
 # ImplantDetect
 
-**Título do TCC:** ImplantDetect: Sistema Web para Detecção de Implantes Dentários em Imagens Radiográficas Utilizando Modelos de Aprendizado de Máquina
-**Alunos:** Raphael Kenji da Rosa, José Antônio de Souza Ferreira
+**Título do TCC:** ImplantDetect: Sistema Web para Detecção de Implantes Dentários em Imagens Radiográficas Utilizando Modelos de Aprendizado de Máquina <br>
+**Alunos:** Raphael Kenji da Rosa, José Antônio de Souza Ferreira <br>
 **Semestre de Defesa:** 2026.1
 
 [PDF do TCC](ImplantDetect__Sistema_Web_para_Detec%C3%A7%C3%A3oo_de_Implantes_Dent%C3%A1rios_em_Imagens_Radiogr%C3%A1ficas_Utilizando_Modelos_de_Aprendizado_de_M%C3%A1quina.pdf)

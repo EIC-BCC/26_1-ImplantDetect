@@ -4,7 +4,7 @@
 **Alunos:** Raphael Kenji da Rosa, José Antônio de Souza Ferreira <br>
 **Semestre de Defesa:** 2026.1
 
-[PDF do TCC](ImplantDetect__Sistema_Web_para_Detec%C3%A7%C3%A3oo_de_Implantes_Dent%C3%A1rios_em_Imagens_Radiogr%C3%A1ficas_Utilizando_Modelos_de_Aprendizado_de_M%C3%A1quina.pdf)
+[PDF do TCC](ImplantDetect__Sistema_Web_para_Detecção_de_Implantes_Dentários_em_Imagens_Radiográficas_Utilizando_Modelos_de_Aprendizado_de_Máquina.pdf)
 
 
 # TL;DR
